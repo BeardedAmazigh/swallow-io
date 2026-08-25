@@ -1,0 +1,2708 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Swallow.io 3D</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#b8d7e2;font-family:Arial,sans-serif;touch-action:none}
+#game{position:fixed;inset:0}
+#hud{position:fixed;top:12px;left:12px;z-index:5;color:#fff;text-shadow:0 2px 5px #000;font-weight:bold}
+#title{font-size:23px}.small{font-size:14px;margin-top:3px}
+#scoreboard{position:fixed;top:12px;right:12px;z-index:5;width:190px;max-width:48vw;
+background:#ffffffdd;color:#17202a;border-radius:14px;padding:9px 10px;
+box-shadow:0 5px 20px #0003;backdrop-filter:blur(6px);font-size:11px}
+#scoreboardTitle{text-align:center;font-size:13px;font-weight:900;margin-bottom:5px}
+.row{display:grid;grid-template-columns:10px 1fr 34px 44px;gap:5px;align-items:center;padding:3px 0}
+.dot{width:9px;height:9px;border-radius:50%;border:1px solid #000}
+.name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+#joy{position:fixed;right:18px;bottom:20px;width:132px;height:132px;border-radius:50%;
+background:#ffffff38;border:3px solid #fff9;z-index:6;touch-action:none;box-shadow:0 4px 18px #0004}
+#stick{position:absolute;width:58px;height:58px;left:37px;top:37px;border-radius:50%;background:#ffffffd0;box-shadow:0 3px 10px #0004}
+#menu{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;background:#0007}
+#card{width:min(390px,calc(100% - 40px));padding:28px;background:#172033;color:#fff;border-radius:20px;text-align:center}
+button{border:0;border-radius:12px;padding:14px 30px;background:#5b78ff;color:#fff;font-size:18px;font-weight:800}
+#loading{color:#fff;font-weight:bold}
+.nameLabel{
+  position:absolute;left:0;top:0;z-index:100;
+  transform:translate(-50%,-100%);
+  color:#fff;background:rgba(0,0,0,.72);
+  border:2px solid #fff;border-radius:8px;
+  padding:3px 8px;
+  font:bold 14px Arial,sans-serif;
+  text-shadow:0 2px 3px #000;
+  box-shadow:0 2px 7px #0008;
+  pointer-events:none;white-space:nowrap;
+  display:none;
+}
+
+
+/* Scoreboard v30 */
+.scoreboard{
+  background:rgba(55,60,62,.58)!important;
+  border:1px solid rgba(255,255,255,.24)!important;
+  border-radius:12px;
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  color:rgba(255,255,255,.94);
+  overflow:hidden;
+}
+.scoreboard .boardHeader,
+.scoreboard .boardRow{
+  display:grid!important;
+  grid-template-columns:minmax(120px,1fr) 58px 58px!important;
+  align-items:center;
+}
+.scoreboard .boardHeader>span,
+.scoreboard .boardRow>span{
+  padding:5px 8px;
+  white-space:nowrap;
+}
+.scoreboard .boardHeader>span:nth-child(2),
+.scoreboard .boardHeader>span:nth-child(3),
+.scoreboard .boardRow>span:nth-child(2),
+.scoreboard .boardRow>span:nth-child(3){
+  text-align:center;
+  border-left:1px solid rgba(255,255,255,.20);
+}
+.scoreboard .boardHeader{
+  background:rgba(255,255,255,.09);
+  color:rgba(255,255,255,.72);
+}
+.scoreboard .boardRow:nth-child(even){
+  background:rgba(255,255,255,.035);
+}
+
+/* Minimal scoreboard: Name | Kills | Size */
+.scoreboard{
+  background:rgba(60,65,67,.60)!important;
+  border:1px solid rgba(255,255,255,.22)!important;
+  border-radius:10px;
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  overflow:hidden;
+  min-width:230px;
+}
+.scoreboard .boardTitle,
+.scoreboard .boardHeader{
+  display:none!important;
+}
+.scoreboard .boardRow{
+  display:grid!important;
+  grid-template-columns:minmax(120px,1fr) 55px 60px!important;
+  align-items:center;
+  min-height:30px;
+  color:rgba(255,255,255,.95);
+}
+.scoreboard .boardRow>span{
+  padding:5px 8px;
+  white-space:nowrap;
+}
+.scoreboard .boardRow>span:nth-child(2),
+.scoreboard .boardRow>span:nth-child(3){
+  text-align:center;
+  border-left:1px solid rgba(255,255,255,.18);
+}
+.scoreboard .boardRow:nth-child(even){
+  background:rgba(255,255,255,.035);
+}
+
+/* Scoreboard v32: rigid three-column table */
+.scoreboard{
+  display:block!important;
+  width:260px!important;
+  min-width:260px!important;
+  padding:0!important;
+  background:rgba(60,65,67,.62)!important;
+  border:1px solid rgba(255,255,255,.22)!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+.scoreboard .boardRow{
+  display:grid!important;
+  grid-template-columns:1fr 62px 62px!important;
+  grid-template-rows:1fr!important;
+  width:100%!important;
+  min-height:30px!important;
+  margin:0!important;
+  padding:0!important;
+  align-items:center!important;
+}
+.scoreboard .boardRow > span{
+  display:block!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  margin:0!important;
+  padding:6px 8px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  line-height:18px!important;
+}
+.scoreboard .boardRow > span:nth-child(1){grid-column:1!important;text-align:left!important;}
+.scoreboard .boardRow > span:nth-child(2){grid-column:2!important;text-align:center!important;border-left:1px solid rgba(255,255,255,.20)!important;}
+.scoreboard .boardRow > span:nth-child(3){grid-column:3!important;text-align:center!important;border-left:1px solid rgba(255,255,255,.20)!important;}
+
+/* Scoreboard v33: clearly visible column separators */
+.scoreboard{
+  background:rgba(60,65,67,.64)!important;
+  border:1px solid rgba(255,255,255,.30)!important;
+}
+.scoreboard .boardRow{
+  grid-template-columns:1fr 62px 62px!important;
+}
+.scoreboard .boardRow > span{
+  border-left:none!important;
+}
+.scoreboard .boardRow > span:nth-child(1){
+  border-right:2px solid rgba(255,255,255,.38)!important;
+}
+.scoreboard .boardRow > span:nth-child(2){
+  border-right:2px solid rgba(255,255,255,.38)!important;
+  border-left:none!important;
+}
+.scoreboard .boardRow > span:nth-child(3){
+  border-left:none!important;
+}
+/* Horizontal row separators */
+.scoreboard .boardRow + .boardRow{
+  border-top:1px solid rgba(255,255,255,.13)!important;
+}
+
+/* Scoreboard v34 — real table with explicit borders */
+.scoreboard{
+  width:270px!important;
+  min-width:270px!important;
+  padding:0!important;
+  margin:0!important;
+  background:rgba(58,63,65,.68)!important;
+  border:1px solid rgba(255,255,255,.35)!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+.scoreTable{
+  width:100%!important;
+  border-collapse:collapse!important;
+  border-spacing:0!important;
+  table-layout:fixed!important;
+  color:rgba(255,255,255,.96)!important;
+  font-family:Arial,sans-serif!important;
+  font-size:14px!important;
+}
+.scoreTable tr{
+  height:30px!important;
+}
+.scoreTable td{
+  padding:5px 8px!important;
+  margin:0!important;
+  border:0!important;
+  border-right:2px solid rgba(255,255,255,.45)!important;
+  background:transparent!important;
+  box-sizing:border-box!important;
+}
+.scoreTable td:nth-child(1){
+  width:auto!important;
+  text-align:left!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.scoreTable td:nth-child(2){
+  width:62px!important;
+  text-align:center!important;
+}
+.scoreTable td:nth-child(3){
+  width:62px!important;
+  text-align:center!important;
+  border-right:0!important;
+}
+.scoreTable tr+tr td{
+  border-top:1px solid rgba(255,255,255,.16)!important;
+}
+
+/* Scoreboard v35 — explicit table cells */
+.scoreboard{
+  width:270px!important;
+  min-width:270px!important;
+  padding:0!important;
+  background:rgba(58,63,65,.68)!important;
+  border:1px solid rgba(255,255,255,.35)!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+.scoreTable{
+  display:table!important;
+  width:100%!important;
+  border-collapse:collapse!important;
+  table-layout:fixed!important;
+  color:#fff!important;
+}
+.scoreTable tbody{
+  display:table-row-group!important;
+}
+.scoreTable tr{
+  display:table-row!important;
+  height:30px!important;
+}
+.scoreTable td{
+  display:table-cell!important;
+  vertical-align:middle!important;
+  padding:6px 8px!important;
+  color:#fff!important;
+  font-family:Arial,sans-serif!important;
+  font-size:14px!important;
+  line-height:18px!important;
+  opacity:1!important;
+  visibility:visible!important;
+  box-sizing:border-box!important;
+  border-top:1px solid rgba(255,255,255,.15)!important;
+  border-right:2px solid rgba(255,255,255,.42)!important;
+}
+.scoreTable tr:first-child td{
+  border-top:0!important;
+}
+.scoreTable td:nth-child(1){
+  width:auto!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.scoreTable td:nth-child(2){
+  width:62px!important;
+  text-align:center!important;
+}
+.scoreTable td:nth-child(3){
+  width:62px!important;
+  text-align:center!important;
+  border-right:0!important;
+}
+
+/* SCOREBOARD FINAL — isolated, high-contrast, three real columns */
+.scoreboardTable{
+  width:270px!important;
+  max-width:270px!important;
+  background:rgba(42,47,50,.82)!important;
+  border:1px solid rgba(255,255,255,.35)!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+  box-shadow:0 3px 12px rgba(0,0,0,.35)!important;
+  color:#ffffff!important;
+  font-family:Arial,sans-serif!important;
+  font-size:14px!important;
+  line-height:18px!important;
+}
+.scoreboardRow{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 62px 62px!important;
+  width:100%!important;
+  min-height:31px!important;
+  box-sizing:border-box!important;
+  color:#ffffff!important;
+  background:rgba(255,255,255,.025)!important;
+}
+.scoreboardRow:nth-child(even){
+  background:rgba(255,255,255,.07)!important;
+}
+.scoreboardRow>div{
+  display:flex!important;
+  align-items:center!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  padding:6px 8px!important;
+  opacity:1!important;
+  visibility:visible!important;
+  color:#ffffff!important;
+}
+.scoreName{
+  justify-content:flex-start!important;
+  font-weight:700!important;
+  text-shadow:0 1px 2px #000!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.scoreKills,.scoreSize{
+  justify-content:center!important;
+  border-left:2px solid rgba(255,255,255,.50)!important;
+  font-weight:700!important;
+  text-shadow:0 1px 2px #000!important;
+}
+.scoreboardRow+.scoreboardRow{
+  border-top:1px solid rgba(255,255,255,.20)!important;
+}
+
+.scoreboardTable{
+  grid-template-columns: minmax(0,1fr) 62px 62px!important;
+}
+.scoreboardRow{
+  grid-template-columns:minmax(0,1fr) 62px 62px!important;
+}
+.scoreName{grid-column:1!important;}
+.scoreSize{
+  grid-column:2!important;
+  justify-content:center!important;
+  border-left:2px solid rgba(255,255,255,.50)!important;
+}
+.scoreKills{
+  grid-column:3!important;
+  justify-content:center!important;
+  border-left:2px solid rgba(255,255,255,.50)!important;
+}
+
+/* SCOREBOARD v38 — fixed 3-column geometry */
+.scoreboardTable{
+  display:block!important;
+  width:270px!important;
+  min-width:270px!important;
+  max-width:270px!important;
+  box-sizing:border-box!important;
+  background:rgba(42,47,50,.84)!important;
+  border:1px solid rgba(255,255,255,.35)!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+}
+.scoreboardRow{
+  display:grid!important;
+  width:100%!important;
+  grid-template-columns:146px 62px 62px!important;
+  grid-template-rows:31px!important;
+  box-sizing:border-box!important;
+  min-height:31px!important;
+  color:#fff!important;
+}
+.scoreboardRow>div{
+  display:flex!important;
+  position:static!important;
+  width:auto!important;
+  height:31px!important;
+  min-width:0!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+  align-items:center!important;
+  padding:0 8px!important;
+  margin:0!important;
+  color:#fff!important;
+  opacity:1!important;
+  visibility:visible!important;
+  overflow:hidden!important;
+}
+.scoreName{
+  grid-column:1!important;
+  grid-row:1!important;
+  justify-content:flex-start!important;
+  white-space:nowrap!important;
+  text-overflow:ellipsis!important;
+  font-weight:700!important;
+}
+.scoreSize{
+  grid-column:2!important;
+  grid-row:1!important;
+  justify-content:center!important;
+  border-left:2px solid rgba(255,255,255,.55)!important;
+  font-weight:700!important;
+}
+.scoreKills{
+  grid-column:3!important;
+  grid-row:1!important;
+  justify-content:center!important;
+  border-left:2px solid rgba(255,255,255,.55)!important;
+  font-weight:700!important;
+}
+.scoreboardRow+.scoreboardRow{
+  border-top:1px solid rgba(255,255,255,.18)!important;
+}
+
+/* FINAL SCOREBOARD OVERRIDE v39 */
+#rows, .scoreboardTable, .finalScoreTable{
+  display:table!important;
+  width:270px!important;
+  min-width:270px!important;
+  max-width:270px!important;
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+  border-spacing:0!important;
+  background:rgba(45,50,53,.86)!important;
+  border:2px solid rgba(255,255,255,.45)!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+  color:#fff!important;
+  box-sizing:border-box!important;
+}
+.finalScoreTable tbody{
+  display:table-row-group!important;
+}
+.finalScoreTable tr{
+  display:table-row!important;
+  width:270px!important;
+  height:32px!important;
+}
+.finalScoreTable td{
+  display:table-cell!important;
+  position:static!important;
+  visibility:visible!important;
+  opacity:1!important;
+  height:32px!important;
+  min-height:32px!important;
+  max-height:32px!important;
+  padding:0 8px!important;
+  margin:0!important;
+  vertical-align:middle!important;
+  color:#fff!important;
+  font-family:Arial,sans-serif!important;
+  font-size:14px!important;
+  font-weight:700!important;
+  line-height:32px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+  border-top:1px solid rgba(255,255,255,.16)!important;
+  border-right:2px solid rgba(255,255,255,.55)!important;
+  text-shadow:0 1px 3px #000!important;
+}
+.finalScoreTable tr:first-child td{
+  border-top:0!important;
+}
+.finalScoreTable td:nth-child(1){
+  width:146px!important;
+  text-align:left!important;
+}
+.finalScoreTable td:nth-child(2){
+  width:62px!important;
+  text-align:center!important;
+}
+.finalScoreTable td:nth-child(3){
+  width:62px!important;
+  text-align:center!important;
+  border-right:0!important;
+}
+
+/* SCOREBOARD v40 — mobile-safe positioning */
+#rows{
+  position:absolute!important;
+  top:12px!important;
+  right:12px!important;
+  left:auto!important;
+  z-index:20!important;
+  width:min(270px,calc(100vw - 24px))!important;
+  max-width:calc(100vw - 24px)!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+}
+#rows .finalScoreTable{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  table-layout:fixed!important;
+  box-sizing:border-box!important;
+}
+#rows .finalScoreTable td:nth-child(1){
+  width:auto!important;
+}
+#rows .finalScoreTable td:nth-child(2),
+#rows .finalScoreTable td:nth-child(3){
+  width:54px!important;
+}
+@media(max-width:360px){
+  #rows{
+    right:8px!important;
+    top:8px!important;
+    width:calc(100vw - 16px)!important;
+    max-width:calc(100vw - 16px)!important;
+  }
+  #rows .finalScoreTable td:nth-child(2),
+  #rows .finalScoreTable td:nth-child(3){
+    width:48px!important;
+  }
+}
+
+/* SCOREBOARD v41 headers */
+.finalScoreTable thead{
+  display:table-header-group!important;
+}
+.finalScoreTable thead tr{
+  display:table-row!important;
+  height:27px!important;
+}
+.finalScoreTable th{
+  display:table-cell!important;
+  height:27px!important;
+  padding:4px 6px!important;
+  box-sizing:border-box!important;
+  color:rgba(255,255,255,.78)!important;
+  background:rgba(255,255,255,.10)!important;
+  border-bottom:1px solid rgba(255,255,255,.25)!important;
+  border-right:2px solid rgba(255,255,255,.45)!important;
+  font:bold 10px Arial,sans-serif!important;
+  line-height:18px!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+}
+.finalScoreTable th:first-child{
+  text-align:left!important;
+}
+.finalScoreTable th:last-child{
+  border-right:0!important;
+}
+
+#progressHud{position:absolute;left:12px;bottom:12px;z-index:20;width:min(230px,calc(100vw - 24px));padding:9px 11px;box-sizing:border-box;border-radius:10px;background:rgba(38,43,45,.76);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);color:#fff;font:13px Arial,sans-serif;text-shadow:0 1px 2px #000;pointer-events:none}
+#progressHud .progressBar{height:7px;margin:6px 0;background:rgba(255,255,255,.18);border-radius:5px;overflow:hidden}
+#progressHud .progressBar i{display:block;height:100%;background:#68d36a;border-radius:5px}
+#progressHud small{opacity:.9}
+.pointsPop{position:absolute;z-index:30;color:#fff;font:bold 22px Arial,sans-serif;text-shadow:0 2px 4px #000;pointer-events:none;transform:translate(-50%,0);opacity:0;transition:transform .6s ease,opacity .6s ease}
+.pointsPop.show{transform:translate(-50%,-35px);opacity:1}
+
+.scoreName{
+  color:inherit!important;
+  font-weight:700!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.9)!important;
+}
+
+/* Scoreboard names always match the corresponding circle */
+.scoreName,.finalName{
+  font-weight:700!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.95)!important;
+}
+
+/* v47: never force scoreboard names to white */
+#rows .scoreboardRow .scoreName{
+  color:inherit!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+
+/* Environmental polish */
+#progressHud{box-shadow:0 3px 12px rgba(0,0,0,.25)}
+
+#sizePulse{
+  position:absolute;left:50%;top:46%;z-index:35;
+  transform:translate(-50%,-50%) scale(.7);
+  opacity:0;pointer-events:none;
+  color:#fff;font:bold 30px Arial,sans-serif;
+  text-shadow:0 3px 8px rgba(0,0,0,.8);
+  transition:transform .35s ease,opacity .35s ease;
+}
+#sizePulse.show{transform:translate(-50%,-50%) scale(1);opacity:1}
+
+/* Better 3D hole appearance */
+.holeLabel{
+  text-shadow:0 2px 4px rgba(0,0,0,.85)!important;
+}
+
+/* Home screen */
+#menu{
+  background:
+    radial-gradient(circle at 50% 35%,rgba(70,145,255,.20),transparent 34%),
+    linear-gradient(180deg,rgba(7,18,31,.52),rgba(3,10,17,.84));
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+}
+#card{
+  width:min(430px,calc(100% - 34px));
+  box-sizing:border-box;
+  padding:28px 24px 22px;
+  background:linear-gradient(145deg,rgba(24,36,52,.94),rgba(10,18,29,.94));
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:26px;
+  box-shadow:0 22px 60px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.08);
+}
+.homeLogo{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  margin:2px auto 9px;
+  min-height:86px;
+}
+.logoHole{
+  width:68px;height:68px;border-radius:50%;
+  position:relative;flex:none;
+  background:radial-gradient(circle at 50% 52%,#000 0 40%,#050d18 55%,#087dff 69%,#53d5ff 75%,#09254c 82%,transparent 83%);
+  box-shadow:0 0 18px #1ca9ff,0 0 42px rgba(34,157,255,.38);
+}
+.logoHole:after{
+  content:"";
+  position:absolute;inset:11px;border-radius:50%;
+  background:radial-gradient(circle,#000 0 52%,#02060c 68%,transparent 72%);
+}
+.logoText{
+  display:flex;align-items:baseline;gap:1px;
+  color:#f7fbff;
+  font:900 clamp(29px,8vw,48px)/.9 Arial,sans-serif;
+  letter-spacing:-2px;
+  text-shadow:0 4px 0 #101b2b,0 6px 14px #0009;
+}
+.logoText em{font-style:normal;font-size:.54em;color:#62c8ff;letter-spacing:-1px}
+.logoText strong{
+  color:#ffd43b;font-size:1.02em;font-style:normal;
+  margin-left:2px;
+  text-shadow:0 4px 0 #8d5c00,0 6px 14px #0009;
+}
+.homeTagline{
+  color:#8edcff;font-size:12px;font-weight:900;letter-spacing:3px;
+  margin:8px 0 12px;
+}
+.homeIntro{
+  color:rgba(255,255,255,.78);
+  font-size:14px;line-height:1.45;margin:0 auto 20px;
+  max-width:330px;
+}
+.startButton{
+  width:min(280px,100%);
+  min-height:58px;
+  border-radius:18px;
+  background:linear-gradient(180deg,#ffd94a,#ffad16);
+  color:#182033;
+  border:2px solid #fff0a0;
+  box-shadow:0 7px 0 #9c5d09,0 12px 28px rgba(255,178,25,.28);
+  font-size:24px;font-weight:900;letter-spacing:1px;
+  cursor:pointer;
+  transition:transform .12s ease,box-shadow .12s ease;
+}
+.startButton:active{
+  transform:translateY(5px);
+  box-shadow:0 2px 0 #9c5d09,0 5px 14px rgba(255,178,25,.22);
+}
+.homeControls{
+  display:flex;justify-content:center;flex-wrap:wrap;gap:8px;
+  margin-top:18px;color:rgba(255,255,255,.62);font-size:11px;
+}
+.homeControls span{
+  padding:6px 9px;border:1px solid rgba(255,255,255,.10);
+  border-radius:999px;background:rgba(255,255,255,.045);
+}
+@media(max-width:420px){
+  #card{padding:22px 16px 18px}
+  .logoHole{width:56px;height:56px}
+  .homeLogo{gap:6px}
+  .homeTagline{letter-spacing:2px}
+}
+
+/* v57: pure in-game home screen; no image is used */
+#menu{
+  position:absolute;inset:0;z-index:100;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+#menu:before{
+  content:"";
+  position:absolute;inset:0;
+  background:
+    radial-gradient(circle at 50% 30%,rgba(55,145,255,.20),transparent 36%),
+    linear-gradient(180deg,rgba(5,18,30,.38),rgba(3,10,17,.88));
+  pointer-events:none;
+}
+#menu #card{position:relative;z-index:1}
+#hud,#scoreboard,#joy{visibility:hidden}
+
+/* More transparent mobile-friendly leaderboard */
+#scoreboard{
+  background:rgba(55,62,68,.42)!important;
+  border-color:rgba(255,255,255,.22)!important;
+  backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
+}
+#scoreboard table,
+#scoreboard tr,
+#scoreboard td,
+#scoreboard th{
+  background:transparent!important;
+}
+#scoreboard td,#scoreboard th{
+  border-color:rgba(255,255,255,.22)!important;
+}
+
+.difficultyPicker{margin:4px auto 18px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;max-width:310px}
+.difficultyButton{font-size:13px;padding:9px 6px}
+
+/* Difficulty selector: three equal, aligned choices */
+.difficultyPicker{
+  margin:4px auto 18px;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+  width:min(310px,92vw);
+  align-items:stretch;
+}
+.difficultyButton{
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  min-height:42px;
+  margin:0;
+  padding:9px 4px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  white-space:nowrap;
+}
+
+.difficultyPicker{margin:4px auto 18px;width:min(310px,92vw)}
+.difficultySliderWrap{width:100%;padding:5px 4px 0;box-sizing:border-box}
+.difficultySlider{
+  width:100%;height:28px;margin:0;display:block;cursor:pointer;
+  accent-color:#e8b93f;
+}
+.difficultyLabels{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:4px;
+  margin-top:4px;font-size:11px;font-weight:800;color:rgba(255,255,255,.72);
+}
+.difficultyLabels span{text-align:center;white-space:nowrap}
+
+.difficultyPicker{margin:4px auto 18px;width:min(310px,92vw)}
+.difficultyButtons{display:flex;flex-wrap:nowrap;gap:5px;width:100%;align-items:stretch}
+.difficultyButton{
+  flex:1 1 0;min-width:0;height:34px;margin:0;padding:4px 2px;
+  box-sizing:border-box;border-radius:9px;font-size:11px;line-height:1;
+  font-weight:800;white-space:nowrap;display:flex;align-items:center;justify-content:center;
+}
+
+/* Final difficulty UI: large, touch-friendly, single row */
+.difficultyPicker{
+  width:min(340px,88vw);
+  margin:10px auto 20px;
+  position:relative;
+  z-index:20;
+}
+.difficultyButtons{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:8px !important;
+  width:100% !important;
+}
+.difficultyButton{
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  position:relative !important;
+  z-index:30 !important;
+  pointer-events:auto !important;
+  touch-action:manipulation !important;
+  width:100% !important;
+  min-width:0 !important;
+  min-height:46px !important;
+  height:46px !important;
+  padding:8px 5px !important;
+  margin:0 !important;
+  border-radius:11px !important;
+  border:1px solid rgba(255,255,255,.22) !important;
+  background:rgba(255,255,255,.09) !important;
+  color:#fff !important;
+  font-size:13px !important;
+  font-weight:800 !important;
+  line-height:1 !important;
+  text-align:center !important;
+  white-space:nowrap !important;
+  cursor:pointer !important;
+}
+.difficultyButton.selected{
+  background:rgba(74,169,116,.38) !important;
+  border:2px solid rgba(255,255,255,.72) !important;
+  box-shadow:0 3px 12px rgba(0,0,0,.18) !important;
+}
+.difficultyButton:active{
+  transform:scale(.97);
+}
+
+/* Difficulty buttons: slightly larger and more readable */
+.difficultyPicker{width:min(380px,92vw)!important;margin:10px auto 20px!important}
+.difficultyButtons{gap:10px!important}
+.difficultyButton{
+  min-height:52px!important;
+  height:52px!important;
+  padding:9px 7px!important;
+  border-radius:12px!important;
+  font-size:15px!important;
+  line-height:1.1!important;
+}
+
+/* Difficulty buttons: guaranteed text width */
+.difficultyPicker{width:min(430px,94vw)!important}
+.difficultyButtons{
+  display:flex!important;
+  gap:8px!important;
+  width:100%!important;
+}
+.difficultyButton{
+  flex:1 1 0!important;
+  width:auto!important;
+  min-width:0!important;
+  padding:9px 10px!important;
+  font-size:14px!important;
+  letter-spacing:-.15px!important;
+  white-space:nowrap!important;
+}
+
+/* Difficulty selector: readable segmented buttons */
+.difficultyPicker{
+  width:min(520px,94vw)!important;
+  margin:10px auto 20px!important;
+}
+.difficultyButtons{
+  display:grid!important;
+  grid-template-columns:repeat(3,1fr)!important;
+  gap:12px!important;
+  width:100%!important;
+}
+.difficultyButton{
+  width:100%!important;
+  min-width:0!important;
+  height:58px!important;
+  min-height:58px!important;
+  padding:8px 14px!important;
+  font-size:16px!important;
+  font-weight:900!important;
+  letter-spacing:0!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  border-radius:13px!important;
+}
+
+/* Difficulty selector: simple vertical stack for clear phone readability */
+.difficultyPicker{
+  width:min(330px,88vw)!important;
+  margin:10px auto 20px!important;
+}
+.difficultyButtons{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:9px!important;
+  width:100%!important;
+}
+.difficultyButton{
+  width:100%!important;
+  height:50px!important;
+  min-height:50px!important;
+  padding:10px 16px!important;
+  font-size:15px!important;
+  font-weight:900!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+</style>
+</head>
+<body>
+<div id="game"></div><div id="labels"></div>
+<div id="hud"><div id="title">SWALLOW.IO 3D</div><div class="small">Size <span id="size">1</span> · Kills <span id="kills">0</span></div></div>
+<div id="scoreboard"><div id="scoreboardTitle">LEADERBOARD</div><div id="rows"></div></div>
+<div id="joy"><div id="stick"></div></div>
+<div id="menu">
+  <div id="card">
+    <div class="homeLogo" aria-label="Swallow.io 3D">
+      <div class="logoHole" aria-hidden="true"></div>
+      <div class="logoText"><b>SWALLOW</b><em>.IO</em><strong>3D</strong></div>
+    </div>
+    <div class="homeTagline">EAT · GROW · SURVIVE</div>
+    <p class="homeIntro">Eat the world around you, grow bigger and outsmart the hungry holes.</p>
+    <div class="difficultyPicker">
+      <div class="levelTitle">DIFFICULTY</div>
+      <div class="difficultyButtons">
+        <button id="diffEasy" class="difficultyButton">🟢 Easy</button>
+        <button id="diffMedium" class="difficultyButton">🟡 Medium</button>
+        <button id="diffHard" class="difficultyButton selected">🔴 Hard</button>
+      </div>
+    </div>
+    
+    <button id="play" class="startButton">START</button>
+    <div class="homeControls">
+      <span>📱 Touch</span>
+      <span>⌨️ Arrows / WASD</span>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+
+const game=document.getElementById("game");
+const menu=document.getElementById("menu");
+const card=document.getElementById("card");
+const joy=document.getElementById("joy");
+const stick=document.getElementById("stick");
+const sizeEl=document.getElementById("size");
+const killsEl=document.getElementById("kills");
+const rowsEl=document.getElementById("rows");
+
+let scene,camera,renderer,clock;
+let player,foods=[],bots=[],decor=[];
+let running=false,gameOver=false,last=0;
+let inputX=0,inputY=0,joyId=null;
+const WORLD=180, HALF=WORLD/2;
+const COLORS=["#ff4d6d","#4dabf7","#ffd166","#06d6a0","#b96cff","#ff922b","#20c997","#f783ac","#74c0fc","#e599f7"];
+const NAMES=["Shadow","Blaze","Titan","Nova","Rex","Viper","Ghost","Rocket","Storm","Pixel","Hunter","Ace","Bolt","Frost","Comet","Turbo","Atlas","Phantom"];
+let usedNames={};
+let currentDifficulty="Hard";
+const DIFFICULTY={
+  // Hard stays close to the original behavior.
+  Hard:{
+    playerChaseRadius:24,
+    botChaseRadius:24,
+    foodRadius:28,
+    disengageRadius:32,
+    chaseDuration:10,
+    thinkMin:.18,thinkMax:.38
+  },
+  // Medium: noticeably less aggressive and less interested in distant food.
+  Medium:{
+    playerChaseRadius:11,
+    botChaseRadius:9,
+    foodRadius:11,
+    disengageRadius:16,
+    chaseDuration:3,
+    thinkMin:.65,thinkMax:1.05
+  },
+  // Easy: very passive AI. It only reacts at close range and gives up quickly.
+  Easy:{
+    playerChaseRadius:5,
+    botChaseRadius:4,
+    foodRadius:6,
+    disengageRadius:9,
+    chaseDuration:1.5,
+    thinkMin:1.0,thinkMax:1.6
+  }
+};
+function difficultyConfig(){return DIFFICULTY[currentDifficulty]||DIFFICULTY.Hard;}
+
+function colorHex(c){return new THREE.Color(c);}
+function randInt(a,b){return Math.floor(rand(a,b+1));}
+function rand(a,b){return a+Math.random()*(b-a);}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function dist2(a,b){let x=a.x-b.x,z=a.z-b.z;return Math.hypot(x,z);}
+
+function makeTerrain(){
+  // One authoritative ground mesh: no overlapping/coplanar planes, which
+  // keeps the old flickering-ground problem from returning.
+  const geo=new THREE.PlaneGeometry(WORLD,WORLD,96,96);
+  const canvas=document.createElement("canvas");
+  canvas.width=768;canvas.height=768;
+  const ctx=canvas.getContext("2d");
+
+  // Base grass.
+  ctx.fillStyle="#79a95d";
+  ctx.fillRect(0,0,768,768);
+
+  // Soft terrain color patches.
+  const patchColors=["#86b968","#6f9d55","#92bd70","#739f59","#a0c27a"];
+  for(let i=0;i<170;i++){
+    const x=Math.random()*768,y=Math.random()*768;
+    const r=12+Math.random()*55;
+    const g=ctx.createRadialGradient(x,y,0,x,y,r);
+    g.addColorStop(0,patchColors[i%patchColors.length]);
+    g.addColorStop(1,"rgba(120,170,90,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  }
+
+  // Natural dirt trails / clearings. They are painted into the same texture,
+  // rather than separate planes, so there is no z-fighting.
+  function path(points,width){
+    ctx.save();
+    ctx.strokeStyle="#b49a67";
+    ctx.lineWidth=width;
+    ctx.lineCap="round";ctx.lineJoin="round";
+    ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);
+    for(let i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);
+    ctx.stroke();
+    ctx.strokeStyle="rgba(205,184,135,.32)";
+    ctx.lineWidth=width*.55;
+    ctx.stroke();
+    ctx.restore();
+  }
+  path([[0,620],[130,560],[260,575],[390,520],[520,535],[768,470]],62);
+  path([[390,0],[405,125],[380,250],[420,390],[395,510],[430,768]],44);
+  path([[0,245],[125,270],[235,235],[350,270],[500,240],[768,275]],30);
+
+  // Small natural ground speckles.
+  for(let i=0;i<900;i++){
+    const x=Math.random()*768,y=Math.random()*768;
+    const r=.5+Math.random()*1.8;
+    ctx.fillStyle=Math.random()<.55?"rgba(55,88,43,.18)":"rgba(238,224,170,.15)";
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  }
+
+  const tex=new THREE.CanvasTexture(canvas);
+  tex.colorSpace=THREE.SRGBColorSpace;
+  tex.wrapS=THREE.ClampToEdgeWrapping;
+  tex.wrapT=THREE.ClampToEdgeWrapping;
+  tex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+
+  const ground=new THREE.Mesh(
+    geo,
+    new THREE.MeshStandardMaterial({
+      map:tex,
+      roughness:1,
+      metalness:0,
+      color:0xffffff
+    })
+  );
+  ground.rotation.x=-Math.PI/2;
+  ground.position.y=-.12;
+  ground.receiveShadow=true;
+  ground.name="WorldGround";
+  scene.add(ground);
+}
+function makeLabel(text,color){
+  const el=document.createElement("div");
+  el.className="nameLabel";
+  el.textContent=text;
+  el.style.borderBottom="3px solid "+color;
+  document.getElementById("labels").appendChild(el);
+  return el;
+}
+function addTree(x,z,s=1){
+  const g=new THREE.Group();
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.28,.48,3.2,7),new THREE.MeshStandardMaterial({color:0x60452e,roughness:1}));
+  trunk.position.y=1.6;g.add(trunk);
+  const mat=new THREE.MeshStandardMaterial({color:0x397a43,roughness:.9});
+  for(let i=0;i<3;i++){const c=new THREE.Mesh(new THREE.IcosahedronGeometry(1.45-i*.18,1),mat);c.position.set((i-1)*.35,3.2+i*.45,(i%2-.5)*.35);g.add(c);}
+  g.position.set(x,0,z);g.scale.setScalar(s);g.userData.parkStatic=true;g.userData.mapObject=true;g.userData.edible=true;g.userData.foodType="tree";scene.add(g);decor.push(g);
+}
+function addBush(x,z,s=1){
+  const g=new THREE.Group(),a=new THREE.MeshStandardMaterial({color:0x438b49,roughness:.9}),b=new THREE.MeshStandardMaterial({color:0x79ad52,roughness:.9});
+  for(let i=0;i<6;i++){const q=new THREE.Mesh(new THREE.IcosahedronGeometry(.55,1),i%2?a:b);q.position.set((i%3-1)*.5,.45+(i%2)*.18,(Math.floor(i/3)-.5)*.45);g.add(q);}
+  g.position.set(x,0,z);g.scale.setScalar(s);g.userData.parkStatic=true;g.userData.mapObject=true;g.userData.edible=true;g.userData.foodType="bush";scene.add(g);decor.push(g);
+}
+function addBench(x,z,rot=0){
+  const g=new THREE.Group();
+  const wood=new THREE.MeshStandardMaterial({color:0x9a6a3f,roughness:1});
+  const dark=new THREE.MeshStandardMaterial({color:0x3e4648,roughness:.8});
+  const seat=new THREE.Mesh(new THREE.BoxGeometry(2.5,.18,.65),wood);
+  seat.position.y=1.15;g.add(seat);
+  const back=new THREE.Mesh(new THREE.BoxGeometry(2.5,1,.14),wood);
+  back.position.set(0,1.7,-.28);g.add(back);
+  for(const xx of[-.9,.9]){
+    const leg=new THREE.Mesh(new THREE.BoxGeometry(.16,1.1,.16),dark);
+    leg.position.set(xx,.55,0);g.add(leg);
+  }
+  g.position.set(x,0,z);g.rotation.y=rot;g.userData.parkStatic=true;g.userData.mapObject=true;g.userData.collisionRadius=2.0;g.userData.foodType="fence";scene.add(g);decor.push(g);
+}
+
+function addCone(x,z,s=1){
+  const g=new THREE.Group();
+  const orange=new THREE.MeshStandardMaterial({color:0xf28c28,roughness:.8});
+  const base=new THREE.Mesh(new THREE.BoxGeometry(1.0,.15,1.0),orange);
+  base.position.y=.08;g.add(base);
+  const cone=new THREE.Mesh(new THREE.ConeGeometry(.34,1.1,12),orange);
+  cone.position.y=.68;g.add(cone);
+  const band=new THREE.MeshStandardMaterial({color:0xf5f0dc,roughness:1});
+  const stripe=new THREE.Mesh(new THREE.CylinderGeometry(.25,.29,.16,12),band);
+  stripe.position.y=.58;g.add(stripe);
+  g.position.set(x,0,z);g.scale.setScalar(s);g.userData.parkStatic=true;g.userData.mapObject=true;g.userData.collisionRadius=1.8;scene.add(g);decor.push(g);
+}
+
+function addFence(x,z,length=5,rot=0){
+  const g=new THREE.Group();
+  const mat=new THREE.MeshStandardMaterial({color:0x58656a,roughness:.85,metalness:.25});
+  const posts=Math.max(3,Math.floor(length/1.15));
+
+  // Each post and rail section is an independent small fragment. These
+  // fragments can therefore become collectible objects rather than one
+  // indestructible long fence.
+  for(let i=0;i<posts;i++){
+    const px=-length/2+i*(length/(posts-1));
+    const p=new THREE.Mesh(new THREE.BoxGeometry(.16,1.35,.16),mat);
+    p.position.set(px,.68,0);g.add(p);
+    p.userData.physicsRadius=.28;
+    p.userData.consumableRadius=.42;
+    p.userData.fenceFragment=true;
+  }
+
+  for(let i=0;i<posts-1;i++){
+    const px=-length/2+(i+.5)*(length/(posts-1));
+    const rail=new THREE.Mesh(new THREE.BoxGeometry(length/(posts-1)*.9,.13,.13),mat);
+    rail.position.set(px,1.05,0);g.add(rail);
+    rail.userData.physicsRadius=.28;
+    rail.userData.consumableRadius=.38;
+    rail.userData.fenceFragment=true;
+  }
+
+  g.position.set(x,0,z);g.rotation.y=rot;
+  g.userData.parkStatic=true;g.userData.mapObject=true;g.userData.edible=true;
+  g.userData.foodType="fence";g.userData.collisionRadius=2.0;
+  scene.add(g);decor.push(g);
+}
+function collectFenceFragments(){
+  // Convert individual fence fragments into lightweight consumables.
+  for(const group of decor){
+    if(group.userData.fragmentsCollected)return;
+    const fragments=group.children.filter(m=>m.userData.fenceFragment);
+    if(!fragments.length)continue;
+    group.userData.fragmentsCollected=true;
+    for(const m of fragments){
+      const world=new THREE.Vector3();
+      m.getWorldPosition(world);
+      const proxy={mesh:m,x:world.x,z:world.z,r:m.userData.consumableRadius,rot:.2,isFence:true,parentGroup:group};
+      foods.push(proxy);
+    }
+  }
+}
+
+
+function addNatureDetailObjects(){
+  const mats={
+    wood:new THREE.MeshStandardMaterial({color:0x765034,roughness:1}),
+    darkWood:new THREE.MeshStandardMaterial({color:0x4f3927,roughness:1}),
+    stone:new THREE.MeshStandardMaterial({color:0x7b8179,roughness:1}),
+    lightStone:new THREE.MeshStandardMaterial({color:0xa2a596,roughness:1}),
+    green:new THREE.MeshStandardMaterial({color:0x4d9148,roughness:.95}),
+    yellow:new THREE.MeshStandardMaterial({color:0xd7b84b,roughness:.9}),
+    white:new THREE.MeshStandardMaterial({color:0xe8e3cc,roughness:.9}),
+    red:new THREE.MeshStandardMaterial({color:0xb84d46,roughness:.9})
+  };
+
+  function root(x,z){
+    const g=new THREE.Group();
+    g.position.set(x,0,z);
+    g.userData.parkStatic=true;
+    g.userData.mapObject=true;
+    scene.add(g);decor.push(g);
+    return g;
+  }
+
+  // Fallen branches / logs
+  for(let i=0;i<24;i++){
+    const g=root(rand(-HALF+5,HALF-5),rand(-HALF+5,HALF-5));
+    const a=new THREE.Mesh(new THREE.CylinderGeometry(.16,.24,2.2,7),mats.wood);
+    a.rotation.z=Math.PI/2;a.rotation.y=rand(0,Math.PI);a.position.y=.22;g.add(a);
+  }
+
+  // Stone clusters
+  for(let i=0;i<30;i++){
+    const g=root(rand(-HALF+5,HALF-5),rand(-HALF+5,HALF-5));
+    const n=randInt(2,4);
+    for(let j=0;j<n;j++){
+      const a=new THREE.Mesh(new THREE.DodecahedronGeometry(rand(.25,.55),0),j%2?mats.stone:mats.lightStone);
+      a.position.set(rand(-.45,.45),rand(.2,.45),rand(-.45,.45));g.add(a);
+    }
+  }
+
+  // Wildflower patches
+  for(let i=0;i<34;i++){
+    const g=root(rand(-HALF+5,HALF-5),rand(-HALF+5,HALF-5));
+    for(let j=0;j<7;j++){
+      const stem=new THREE.Mesh(new THREE.CylinderGeometry(.025,.035,.45,5),mats.green);
+      stem.position.set(rand(-.7,.7),.22,rand(-.7,.7));g.add(stem);
+      const flower=new THREE.Mesh(new THREE.SphereGeometry(.11,7,6),[mats.yellow,mats.white,mats.red][j%3]);
+      flower.position.set(stem.position.x,.48,stem.position.z);g.add(flower);
+    }
+  }
+
+  // Tree stumps
+  for(let i=0;i<14;i++){
+    const g=root(rand(-HALF+5,HALF-5),rand(-HALF+5,HALF-5));
+    const a=new THREE.Mesh(new THREE.CylinderGeometry(.45,.58,.65,9),mats.darkWood);
+    a.position.y=.32;g.add(a);
+    const top=new THREE.Mesh(new THREE.CircleGeometry(.43,12),mats.lightStone);
+    top.rotation.x=-Math.PI/2;top.position.y=.66;g.add(top);
+  }
+
+  // Mushrooms
+  for(let i=0;i<28;i++){
+    const g=root(rand(-HALF+5,HALF-5),rand(-HALF+5,HALF-5));
+    const stem=new THREE.Mesh(new THREE.CylinderGeometry(.07,.11,.35,7),mats.white);
+    stem.position.y=.18;g.add(stem);
+    const cap=new THREE.Mesh(new THREE.SphereGeometry(.25,10,7),i%3?mats.red:mats.yellow);
+    cap.scale.y=.5;cap.position.y=.4;g.add(cap);
+  }
+
+  // Small natural stepping stones / trail markers
+  for(let i=0;i<22;i++){
+    const g=root(rand(-HALF+8,HALF-8),rand(-HALF+8,HALF-8));
+    const a=new THREE.Mesh(new THREE.CylinderGeometry(.45,.55,.12,8),mats.lightStone);
+    a.position.y=.06;g.add(a);
+  }
+}
+
+function makeAreaLabel(text,x,z,color){
+  const canvas=document.createElement("canvas");
+  canvas.width=512;canvas.height=96;
+  const c=canvas.getContext("2d");
+  c.fillStyle="rgba(15,24,20,.72)";
+  c.roundRect(8,8,496,80,20);c.fill();
+  c.font="900 38px Arial";c.textAlign="center";c.textBaseline="middle";
+  c.fillStyle=color;c.fillText(text,256,50);
+  const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;
+  const mat=new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false});
+  const s=new THREE.Sprite(mat);s.position.set(x,9,z);s.scale.set(18,3.4,1);
+  s.userData.areaLabel=true;scene.add(s);
+}
+
+function makeHouse(x,z,s=1){
+  const g=new THREE.Group();
+  const wall=new THREE.Mesh(new THREE.BoxGeometry(4,2.7,3.5),
+    new THREE.MeshStandardMaterial({color:0xc8b89c,roughness:.9}));
+  wall.position.y=1.35;g.add(wall);
+  const roof=new THREE.Mesh(new THREE.ConeGeometry(3.1,2.2,4),
+    new THREE.MeshStandardMaterial({color:0x784d3d,roughness:.9}));
+  roof.rotation.y=Math.PI/4;roof.position.y=3.8;g.add(roof);
+  const door=new THREE.Mesh(new THREE.BoxGeometry(.65,1.45,.08),
+    new THREE.MeshStandardMaterial({color:0x4d3828}));
+  door.position.set(0,.72,1.79);g.add(door);
+  g.position.set(x,0,z);g.scale.setScalar(s);
+  g.userData={mapObject:true,edible:true,foodType:"house",parkStatic:true};
+  scene.add(g);decor.push(g);
+}
+function makeBench(x,z,rot=0){
+  const g=new THREE.Group();
+  const wood=new THREE.MeshStandardMaterial({color:0x8b633f,roughness:.9});
+  const metal=new THREE.MeshStandardMaterial({color:0x3e4648,roughness:.8,metalness:.25});
+  const seat=new THREE.Mesh(new THREE.BoxGeometry(2.5,.16,.55),wood);seat.position.y=1;g.add(seat);
+  const back=new THREE.Mesh(new THREE.BoxGeometry(2.5,.16,.65),wood);back.position.set(0,1.65,-.22);back.rotation.x=-.25;g.add(back);
+  for(const xx of [-.85,.85]){
+    const leg=new THREE.Mesh(new THREE.BoxGeometry(.13,.95,.13),metal);leg.position.set(xx,.5,0);g.add(leg);
+  }
+  g.position.set(x,0,z);g.rotation.y=rot;
+  g.userData={mapObject:true,edible:true,foodType:"bench",parkStatic:true};
+  scene.add(g);decor.push(g);
+}
+function makeTent(x,z,rot=0){
+  const g=new THREE.Group();
+  const mat=new THREE.MeshStandardMaterial({color:0xd36b4d,roughness:.9});
+  const a=new THREE.Mesh(new THREE.ConeGeometry(1.7,2.1,3),mat);
+  a.rotation.y=Math.PI/2;a.position.y=1.05;g.add(a);
+  g.position.set(x,0,z);g.rotation.y=rot;
+  g.userData={mapObject:true,edible:true,foodType:"tent",parkStatic:true};
+  scene.add(g);decor.push(g);
+}
+function makeStreetLight(x,z){
+  const g=new THREE.Group();
+  const metal=new THREE.MeshStandardMaterial({color:0x353b3d,roughness:.6,metalness:.65});
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,3.8,8),metal);pole.position.y=1.9;g.add(pole);
+  const lamp=new THREE.Mesh(new THREE.SphereGeometry(.28,12,8),
+    new THREE.MeshStandardMaterial({color:0xffe9a5,emissive:0xffc84d,emissiveIntensity:.5}));
+  lamp.position.y=3.8;g.add(lamp);
+  g.position.set(x,0,z);g.userData={mapObject:true,edible:true,foodType:"nature",parkStatic:true};
+  scene.add(g);decor.push(g);
+}
+function makeCar(x,z,rot=0){
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.BoxGeometry(3.4,.8,1.65),
+    new THREE.MeshStandardMaterial({color:[0x3e82c9,0xd25a4d,0xe0b64c][Math.floor(Math.random()*3)],roughness:.55,metalness:.15}));
+  body.position.y=.65;g.add(body);
+  const roof=new THREE.Mesh(new THREE.BoxGeometry(1.7,.7,1.35),
+    new THREE.MeshStandardMaterial({color:0x202a31,roughness:.3,metalness:.15}));
+  roof.position.set(0,1.25,0);g.add(roof);
+  const tireMat=new THREE.MeshStandardMaterial({color:0x111214,roughness:1});
+  for(const xx of [-1.15,1.15])for(const zz of [-.78,.78]){
+    const w=new THREE.Mesh(new THREE.CylinderGeometry(.28,.28,.16,12),tireMat);
+    w.rotation.z=Math.PI/2;w.position.set(xx,.38,zz);g.add(w);
+  }
+  g.position.set(x,0,z);g.rotation.y=rot;
+  g.userData={mapObject:true,edible:true,foodType:"car",parkStatic:true};
+  scene.add(g);decor.push(g);
+}
+
+function addAreaDecor(){
+  // Five distinct zones. The terrain remains one mesh; these are only objects
+  // placed inside logical area bounds.
+  const areas=[
+    {name:"FOREST",x:-62,z:55,color:"#78c879",type:"forest"},
+    {name:"MEADOW",x:60,z:55,color:"#f0d36a",type:"meadow"},
+    {name:"CAMP",x:-58,z:-55,color:"#ff9b72",type:"camp"},
+    {name:"VILLAGE",x:60,z:-52,color:"#e8a96b",type:"village"},
+    {name:"TOWN",x:0,z:-5,color:"#79b9ff",type:"town"}
+  ];
+  for(const a of areas)makeAreaLabel(a.name,a.x,a.z,a.color);
+
+  // Forest: denser trees + logs + mushrooms.
+  for(let i=0;i<28;i++)addTree(-62+rand(-22,22),55+rand(-20,20),rand(.65,1.15));
+  for(let i=0;i<14;i++)addBush(-62+rand(-20,20),55+rand(-18,18),rand(.55,.95));
+
+  // Meadow: open grassland with flowers, fences and hay bales.
+  for(let i=0;i<28;i++){
+    const g=new THREE.Group();
+    const stem=new THREE.Mesh(
+      new THREE.CylinderGeometry(.025,.04,.35,5),
+      new THREE.MeshStandardMaterial({color:0x4f7e38,roughness:1})
+    );
+    stem.position.y=.18;g.add(stem);
+    const flower=new THREE.Mesh(
+      new THREE.SphereGeometry(.12,7,5),
+      new THREE.MeshStandardMaterial({color:[0xffd85c,0xff8fa3,0xa98cff][i%3],roughness:.7})
+    );
+    flower.position.y=.42;g.add(flower);
+    g.position.set(60+rand(-22,22),.02,55+rand(-18,18));
+    g.userData={mapObject:true,edible:true,foodType:"flower",parkStatic:true};
+    scene.add(g);decor.push(g);
+  }
+  for(let i=0;i<4;i++)addFence(60+rand(-18,18),55+rand(-14,14),rand(4,7),rand(0,Math.PI));
+
+  // Camping area.
+  for(let i=0;i<5;i++)makeTent(-58+rand(-18,18),-55+rand(-16,16),rand(0,Math.PI));
+  for(let i=0;i<7;i++)makeBench(-58+rand(-20,20),-55+rand(-18,18),rand(0,Math.PI));
+  for(let i=0;i<10;i++)addBush(-58+rand(-20,20),-55+rand(-18,18),rand(.45,.75));
+
+  // Village: houses and streets.
+  for(let i=0;i<8;i++){
+    const col=i%4,row=Math.floor(i/4);
+    makeHouse(45+col*10,-65+row*13,rand(.8,1.05));
+  }
+  for(let i=0;i<5;i++)addFence(43+i*10,-43,7,0);
+  for(let i=0;i<5;i++)makeStreetLight(43+i*10,-50);
+
+  // Town: cars, benches, streetlights and a few buildings.
+  for(let i=0;i<6;i++)makeHouse(-18+i*7,-20,rand(.9,1.1));
+  for(let i=0;i<7;i++)makeCar(-20+rand(-20,20),-2+rand(-15,15),rand(0,Math.PI));
+  for(let i=0;i<6;i++)makeBench(-18+rand(-20,20),5+rand(-12,12),rand(0,Math.PI));
+  for(let i=0;i<7;i++)makeStreetLight(-20+rand(-22,22),-2+rand(-14,14));
+}
+
+function addParkObjects(){
+  // Preserve the existing natural distribution outside the themed zones.
+  const clearings=[
+    {x:-52,z:38,w:34,d:28},{x:48,z:36,w:30,d:24},
+    {x:-45,z:-40,w:42,d:30},{x:43,z:-35,w:34,d:36},{x:4,z:6,w:42,d:30}
+  ];
+  for(let i=0;i<55;i++){
+    const x=rand(-HALF+5,HALF-5),z=rand(-HALF+5,HALF-5);
+    let inside=false;
+    for(const c of clearings)if(Math.abs(x-c.x)<c.w*.48&&Math.abs(z-c.z)<c.d*.48){inside=true;break;}
+    if(!inside)addTree(x,z,rand(.65,1.15));
+  }
+  for(const c of clearings){
+    for(let i=0;i<8;i++)addBush(c.x+rand(-c.w*.43,c.w*.43),c.z+rand(-c.d*.43,c.d*.43),rand(.5,.9));
+  }
+  // The themed areas are built after reset(), because some food helpers
+  // depend on the initialized player object.
+}
+function makeHole(color,name){
+  const group=new THREE.Group();
+  const c=colorHex(color);
+  const isBigD=name==="Big_D";
+
+  // Thin premium outer contour.
+  const outerMat=new THREE.MeshStandardMaterial({
+    color:isBigD?0x030812:0x060707,
+    roughness:.72,
+    metalness:.12
+  });
+  const outer=new THREE.Mesh(
+    new THREE.CylinderGeometry(1.018,1.018,.18,64),
+    outerMat
+  );
+  outer.castShadow=true;
+  outer.receiveShadow=true;
+  group.add(outer);
+
+  // Colored ground rim. Big_D gets a more luminous cyan/blue treatment.
+  const faceMat=new THREE.MeshStandardMaterial({
+    color:c,
+    roughness:.28,
+    metalness:isBigD?.18:.06,
+    emissive:isBigD?0x064c68:0x000000,
+    emissiveIntensity:isBigD?.42:0
+  });
+  const face=new THREE.Mesh(
+    new THREE.RingGeometry(.70,.955,64),
+    faceMat
+  );
+  face.rotation.x=-Math.PI/2;
+  face.position.y=.105;
+  face.receiveShadow=true;
+  group.add(face);
+
+  // Deep black inner wall.
+  const wall=new THREE.Mesh(
+    new THREE.CylinderGeometry(.70,.46,.38,64,1,true),
+    new THREE.MeshStandardMaterial({
+      color:0x050607,roughness:1,metalness:0,side:THREE.DoubleSide
+    })
+  );
+  wall.position.y=-.08;
+  group.add(wall);
+
+  // Darker cavity layer.
+  const cavity=new THREE.Mesh(
+    new THREE.CylinderGeometry(.46,.27,.20,64),
+    new THREE.MeshStandardMaterial({
+      color:0x020304,roughness:1,metalness:0
+    })
+  );
+  cavity.position.y=-.34;
+  group.add(cavity);
+
+  // Absolute black center.
+  const abyss=new THREE.Mesh(
+    new THREE.CircleGeometry(.27,64),
+    new THREE.MeshBasicMaterial({color:0x000000})
+  );
+  abyss.rotation.x=-Math.PI/2;
+  abyss.position.y=-.455;
+  group.add(abyss);
+
+  // Thin luminous edge around the opening.
+  const rim=new THREE.Mesh(
+    new THREE.TorusGeometry(.70,.018,8,64),
+    new THREE.MeshStandardMaterial({
+      color:c,
+      roughness:.28,
+      metalness:isBigD?.2:.04,
+      emissive:isBigD?c:0x000000,
+      emissiveIntensity:isBigD?.95:0
+    })
+  );
+  rim.rotation.x=Math.PI/2;
+  rim.position.y=.11;
+  group.add(rim);
+
+  // Big_D gets a second, offset energy ring: blue-violet gives him a
+  // distinctive "main character" silhouette without making the hole thicker.
+  // Crown is attached to every circle but only the largest circle
+  // displays it. This keeps the crown perfectly aligned with the winner.
+  const crown=new THREE.Group();
+  const gold=new THREE.MeshStandardMaterial({
+    color:0xffc62e,roughness:.2,metalness:.8,
+    emissive:0x6a4300,emissiveIntensity:.2,
+    side:THREE.DoubleSide
+  });
+
+  // Hollow crown: only a thin circular band forms the base. The center is
+  // completely open so the hole remains visible through it.
+  const crownBase=new THREE.Mesh(
+    new THREE.TorusGeometry(.55,.075,10,40),gold
+  );
+  crownBase.position.y=1.08;
+  // Three.js TorusGeometry is created in the XY plane by default.
+  // Rotate it 90° around X so the crown ring lies horizontally in XZ.
+  crownBase.rotation.set(Math.PI/2,0,0);
+  crown.add(crownBase);
+
+  // Five evenly spaced spikes around the OUTER contour.
+  const spikeCount=5;
+  const spikeRadius=.55;
+  for(let i=0;i<spikeCount;i++){
+    const a=(i/spikeCount)*Math.PI*2;
+    const spike=new THREE.Mesh(
+      new THREE.ConeGeometry(.115,.62,4),gold
+    );
+    spike.position.set(
+      Math.cos(a)*spikeRadius,
+      1.38,
+      Math.sin(a)*spikeRadius
+    );
+    spike.rotation.y=a+Math.PI/4;
+    crown.add(spike);
+  }
+
+  // Small front jewel mounted on the outer band, without filling the center.
+  const jewel=new THREE.Mesh(
+    new THREE.SphereGeometry(.07,10,8),
+    new THREE.MeshStandardMaterial({
+      color:0xfff1a0,roughness:.16,metalness:.6,
+      emissive:0xff9f00,emissiveIntensity:.3
+    })
+  );
+  jewel.position.set(0,1.11,.60);
+  crown.add(jewel);
+
+  crown.position.y=.02;
+  crown.visible=false;
+  crown.scale.setScalar(1.05);
+  group.add(crown);
+
+  let energyRing=null,particles=[];
+  if(isBigD){
+    energyRing=new THREE.Mesh(
+      new THREE.TorusGeometry(.83,.012,8,64),
+      new THREE.MeshBasicMaterial({
+        color:0x8a5cff,transparent:true,opacity:.72
+      })
+    );
+    energyRing.rotation.x=Math.PI/2;
+    energyRing.position.y=.075;
+    group.add(energyRing);
+
+    for(let i=0;i<10;i++){
+      const a=i/10*Math.PI*2;
+      const p=new THREE.Mesh(
+        new THREE.SphereGeometry(.018,6,6),
+        new THREE.MeshBasicMaterial({
+          color:i%2?0x42e8ff:0x9b6cff,
+          transparent:true,opacity:.8
+        })
+      );
+      p.position.set(Math.cos(a)*.86,.13,Math.sin(a)*.86);
+      group.add(p);particles.push(p);
+    }
+  }
+
+  group.userData={
+    face,inner:abyss,rim,wall,cavity,crown,energyRing,particles,isHole:true,isBigD
+  };
+  return group;
+}
+
+function updateHoleVisuals(dt){
+  const actors=[player,...bots].filter(a=>a&&!a.dead&&a.mesh);
+  let biggest=null;
+  for(const a of actors){
+    if(!biggest||a.r>biggest.r)biggest=a;
+  }
+  for(const a of actors){
+    if(a.mesh.userData.crown){
+      a.mesh.userData.crown.visible=(a===biggest);
+      if(a===biggest){
+        a.mesh.userData.crown.rotation.y+=dt*.8;
+        const pulse=1+Math.sin(performance.now()*.004)*.025;
+        a.mesh.userData.crown.scale.setScalar(pulse);
+      }
+    }
+  }
+  for(const a of actors){
+    if(!a||!a.mesh||!a.mesh.userData.isHole)continue;
+    const u=a.mesh.userData;
+    if(u.energyRing){
+      u.energyRing.rotation.z+=dt*.75;
+      u.energyRing.rotation.y+=dt*.22;
+      const pulse=1+Math.sin(performance.now()*.003)*.018;
+      u.energyRing.scale.setScalar(pulse);
+    }
+    if(u.rim && a===player){
+      const pulse=.9+Math.sin(performance.now()*.004)*.16;
+      u.rim.material.emissiveIntensity=pulse;
+    }
+    if(u.particles && u.particles.length){
+      const t=performance.now()*.001;
+      for(let i=0;i<u.particles.length;i++){
+        const p=u.particles[i];
+        const a0=i/u.particles.length*Math.PI*2;
+        const rr=.86+Math.sin(t*1.7+i)*.025;
+        p.position.x=Math.cos(a0+t*.55)*rr;
+        p.position.z=Math.sin(a0+t*.55)*rr;
+        p.position.y=.13+Math.sin(t*2+i)*.035;
+      }
+    }
+  }
+}
+
+function awardCircleKillPoints(eater,victim){
+  if(!eater||!victim)return 0;
+  // Circle kills are deliberately much more valuable than scenery:
+  // reward based on the victim's current size, with a generous floor.
+  const victimSize=sizeLevel(victim);
+  const rewardMultiplier=currentDifficulty==="Easy" ? .25 :
+    (currentDifficulty==="Medium" ? .45 : .75);
+  const points=Math.max(12,Math.round(pointsToSize(victim.foodPoints||0)*rewardMultiplier));
+  eater.foodPoints=(eater.foodPoints||0)+points;
+  const oldLevel=eater.foodLevel||1;
+  const newLevel=Math.min(10,1+Math.floor(eater.foodPoints/50));
+  if(newLevel>oldLevel){
+    eater.foodLevel=newLevel;
+    eater.r=Math.min(10,3.2+(newLevel-1)*.65);
+    if(eater===player)triggerSizePulse(newLevel);
+  }
+  return points;
+}
+
+function syncActorSize(o){
+  if(!o)return 1;
+  const radius=Math.max(3.2,Math.min(10,o.r||3.2));
+  const level=Math.min(10,Math.max(1,
+    1+Math.floor((radius-3.2)/.65+1e-7)
+  ));
+  o.foodLevel=level;
+  return level;
+}
+function sizeLevel(o){ return syncActorSize(o); }
+
+function sizeSpeedMultiplier(o){
+  const level=Math.min(10,Math.max(1,o?.foodLevel||1));
+  return 1+0.04*(level-1);
+}
+
+function setHoleScale(o){
+  syncActorSize(o);
+  const s=o.r/1.08;
+  o.mesh.scale.setScalar(s);
+  // Keep the visual 3D object attached to the logical game position.
+  o.mesh.position.set(o.x,.42,o.z);
+  if(o.mesh.userData.label){
+    o.mesh.userData.label.dataset.name=o.name;
+  }
+}
+
+function registerNatureObjectsAsFood(){
+  // Authoritative rule: every object in `decor` is edible.
+  // The visible mesh itself is the edible object; its world bounding box
+  // determines its gameplay footprint.
+  for(const g of decor){
+    if(!g)continue;
+
+    const existing=foods.find(f=>f.isMapObject && f.mesh===g);
+    if(existing){
+      g.visible=true;
+      continue;
+    }
+
+    const box=new THREE.Box3().setFromObject(g);
+    const center=new THREE.Vector3();
+    const size=new THREE.Vector3();
+    box.getCenter(center);
+    box.getSize(size);
+
+    const radius=Math.max(
+      .18,
+      Number.isFinite(g.userData?.consumableRadius)
+        ? g.userData.consumableRadius
+        : Math.max(size.x,size.z)*.5
+    );
+
+    foods.push({
+      mesh:g,
+      x:center.x,
+      z:center.z,
+      r:radius,
+      rot:rand(-.2,.2),
+      isMapObject:true
+    });
+  }
+}
+
+const RESPAWN_DELAY={
+  flower:3.5,
+  mushroom:5,
+  rock:9,
+  stone:12,
+  log:18,
+  branch:14,
+  stump:28,
+  bush:45,
+  tree:90,
+  fence:20,
+  nature:25,
+  house:120,
+  car:35,
+  bench:30,
+  tent:50
+};
+const respawnQueue=[];
+
+function classifyFood(f){
+  if(f.foodKind)return f.foodKind;
+  if(f.isMapObject){
+    const n=(f.mesh?.userData?.foodType||"nature").toLowerCase();
+    return n.includes("tree")?"tree":
+           n.includes("bush")?"bush":
+           n.includes("flower")?"flower":
+           n.includes("rock")?"rock":
+           n.includes("stone")?"stone":
+           n.includes("log")?"log":
+           n.includes("branch")?"branch":
+           n.includes("stump")?"stump":
+           n.includes("house")?"house":
+           n.includes("car")?"car":
+           n.includes("bench")?"bench":
+           n.includes("tent")?"tent":"nature";
+  }
+  return f.mesh?.userData?.foodType||"rock";
+}
+function queueRespawn(f){
+  const kind=classifyFood(f);
+  respawnQueue.push({
+    kind,
+    at:performance.now()+((RESPAWN_DELAY[kind]||20)*1000),
+    isMapObject:!!f.isMapObject
+  });
+}
+function spawnReplacement(kind){
+  const f=randomFood();
+  f.foodKind=kind;
+  f.respawned=true;
+  // Newly regenerated objects must enter the same authoritative food list
+  // used by initial objects, otherwise they are visible but uneatable.
+  foods.push(f);
+  return f;
+}
+function updateRespawns(){
+  const now=performance.now();
+  for(let i=respawnQueue.length-1;i>=0;i--){
+    if(respawnQueue[i].at>now)continue;
+    const q=respawnQueue[i];
+    // Keep large scenery less common than small food.
+    const count=foods.filter(f=>classifyFood(f)===q.kind).length;
+    const desired=q.kind==="tree"?8:q.kind==="bush"?12:q.kind==="flower"?28:18;
+    if(count<desired)spawnReplacement(q.kind);
+    respawnQueue.splice(i,1);
+  }
+}
+function randomFood(){
+  const type=Math.floor(Math.random()*10),s=rand(.75,1.15),g=new THREE.Group();
+  g.userData.foodType=["rock","log","stump","bush","mushroom","rock","branch","flower","stone","log"][type];
+  const rock=new THREE.MeshStandardMaterial({color:0x777d72,roughness:1}),wood=new THREE.MeshStandardMaterial({color:0x765034,roughness:1});
+  const leaf=new THREE.MeshStandardMaterial({color:0x4f9448,roughness:1}),red=new THREE.MeshStandardMaterial({color:0xc94d45,roughness:.8});
+  if(type===0){let a=new THREE.Mesh(new THREE.DodecahedronGeometry(.65),rock);a.position.y=.55;g.add(a);}
+  else if(type===1){let a=new THREE.Mesh(new THREE.CylinderGeometry(.28,.34,1.5,8),wood);a.rotation.z=Math.PI/2;a.position.y=.35;g.add(a);}
+  else if(type===2){let a=new THREE.Mesh(new THREE.CylinderGeometry(.34,.42,.65,9),wood);a.position.y=.32;g.add(a);}
+  else if(type===3){for(let i=0;i<5;i++){let a=new THREE.Mesh(new THREE.ConeGeometry(.08,.65,7),leaf);a.position.set((i-2)*.15,.32,(i%2-.5)*.15);g.add(a);}}
+  else if(type===4){for(let i=0;i<4;i++){let a=new THREE.Mesh(new THREE.IcosahedronGeometry(.32),leaf);a.position.set((i%2-.5)*.4,.35,(i-1.5)*.2);g.add(a);}}
+  else if(type===5){let a=new THREE.Mesh(new THREE.ConeGeometry(.35,.65,8),wood);a.position.y=.33;g.add(a);}
+  else if(type===6){let a=new THREE.Mesh(new THREE.CylinderGeometry(.16,.22,1.6,7),wood);a.rotation.z=Math.PI/2;a.position.y=.25;g.add(a);}
+  else if(type===7){for(let i=0;i<3;i++){let a=new THREE.Mesh(new THREE.SphereGeometry(.22,10,8),red);a.position.set((i-1)*.28,.3,(i%2-.5)*.2);g.add(a);}}
+  else {let a=new THREE.Mesh(new THREE.IcosahedronGeometry(.45),rock);a.position.y=.4;g.add(a);}
+  g.scale.setScalar(s);
+  let px=0,pz=0,ok=false;
+  for(let tries=0;tries<20&&!ok;tries++){
+    px=rand(-HALF+6,HALF-6);pz=rand(-HALF+6,HALF-6);
+    ok=Math.hypot(px-player.x,pz-player.z)>12;
+    for(const b of bots)if(Math.hypot(px-b.x,pz-b.z)<8)ok=false;
+  }
+  g.position.set(px,.02,pz);
+  g.rotation.y=rand(0,Math.PI*2);scene.add(g);
+  return {mesh:g,x:g.position.x,z:g.position.z,r:rand(1.0,1.7),rot:rand(-1,1),
+    foodKind:g.userData.foodType||"rock",
+    respawned:false};
+}
+function randomName(){
+  const available=NAMES.filter(n=>n!=="Big_D"&&!usedNames[n]);
+  if(!available.length){usedNames={};return NAMES[(Math.random()*NAMES.length)|0];}
+  const n=available[(Math.random()*available.length)|0];usedNames[n]=true;return n;
+}
+
+
+function makeHoleVisual(radius,color){
+  const g=new THREE.Group();
+
+  // Thin colored outer rim.
+  const rimMat=new THREE.MeshStandardMaterial({
+    color:color,
+    roughness:.55,
+    metalness:.05
+  });
+  const rim=new THREE.Mesh(
+    new THREE.RingGeometry(radius*.88,radius,48),
+    rimMat
+  );
+  rim.rotation.x=-Math.PI/2;
+  rim.position.y=.055;
+  g.add(rim);
+
+  // Slightly recessed black inner wall.
+  const wallMat=new THREE.MeshStandardMaterial({
+    color:0x07090a,
+    roughness:.95,
+    metalness:.0
+  });
+  const wall=new THREE.Mesh(
+    new THREE.CylinderGeometry(radius*.88,radius*.66,radius*.28,48,1,true),
+    wallMat
+  );
+  wall.position.y=-radius*.12;
+  g.add(wall);
+
+  // Deep center, slightly smaller than the opening, to avoid the flat-disc look.
+  const depthMat=new THREE.MeshStandardMaterial({
+    color:0x010203,
+    roughness:1,
+    metalness:0
+  });
+  const depth=new THREE.Mesh(
+    new THREE.CylinderGeometry(radius*.66,radius*.48,radius*.12,48),
+    depthMat
+  );
+  depth.position.y=-radius*.29;
+  g.add(depth);
+
+  // Very subtle inner rim to catch light and sell the depth.
+  const innerRim=new THREE.Mesh(
+    new THREE.RingGeometry(radius*.64,radius*.67,48),
+    new THREE.MeshStandardMaterial({
+      color:0x111416,roughness:.8,metalness:0
+    })
+  );
+  innerRim.rotation.x=-Math.PI/2;
+  innerRim.position.y=-radius*.22;
+  g.add(innerRim);
+
+  return g;
+}
+
+function makeBot(i){
+  let x,z;
+  do{x=rand(-HALF+8,HALF-8);z=rand(-HALF+8,HALF-8);}
+  while(Math.hypot(x,z)<35);
+  const color=COLORS[(i+2)%COLORS.length];
+  const bot={x,z,r:3.2,kills:0,foodPoints:0,foodLevel:1,aiType:["hunter","forager","coward","opportunist","hunter","forager","opportunist","coward"][i%8],color,name:randomName(),speed:9,chaseCooldown:0,
+    tx:x,tz:z,timer:0,chasing:false,mode:"wander",chaseTime:0,
+    vx:0,vz:0,aiThink:0,fearCooldown:0};
+  bot.mesh=makeHole(color,bot.name);scene.add(bot.mesh);setHoleScale(bot);
+  return bot;
+}
+
+function reset(){
+  usedNames={};
+
+  // Remove every previous gameplay mesh before rebuilding the round.
+  // This prevents the old player hole from remaining visible at the start.
+  if(player && player.mesh){
+    scene.remove(player.mesh);
+    if(player.mesh.userData.label)player.mesh.userData.label.remove();
+  }
+  foods.forEach(f=>{if(f.mesh && !f.isFence)scene.remove(f.mesh);});
+  bots.forEach(b=>{
+    if(b.mesh)scene.remove(b.mesh);
+    if(b.mesh && b.mesh.userData.label)b.mesh.userData.label.remove();
+  });
+  foods=[];bots=[];
+  eating.length=0;
+  for(const g of decor){
+    if(!g)continue;
+    g.visible=true;
+    if(!g.parent)scene.add(g);
+  }
+  player={x:0,z:0,r:3.2,kills:0,foodPoints:0,foodLevel:1,aiType:"player",color:"#25D9FF",name:"Big_D",speed:9};
+  player.mesh=makeHole(player.color,player.name);
+  player.mesh.position.set(player.x,.42,player.z);
+  scene.add(player.mesh);
+  setHoleScale(player);
+  for(let i=0;i<110;i++)foods.push(randomFood());
+  for(let i=0;i<6;i++)bots.push(makeBot(i));
+  registerNatureObjectsAsFood();
+  updateBoard();
+}
+
+function eatFoodFor(o){
+  o.r=Math.min(10,o.r+0.05);
+}
+
+function respawnBot(b){
+  b.dead=false;
+  b.x=rand(-HALF+8,HALF-8);b.z=rand(-HALF+8,HALF-8);b.r=3.2;b.foodLevel=1;b.foodPoints=0;
+  b.chasing=false;b.mode="wander";b.chaseTime=0;
+  b.name=randomName();
+  if(b.mesh.userData.rim && b.mesh.userData.rim.material){b.mesh.userData.rim.material.color.set(b.color);}
+  if(b.mesh.userData.label)b.mesh.userData.label.textContent=b.name;
+}
+
+
+const eating=[];
+function foodPhysicsType(f){
+  if(f?.isFence)return "fence";
+  if(f?.mesh?.userData?.foodType)return f.mesh.userData.foodType;
+  if(f?.isMapObject)return "nature";
+  return "small";
+}
+function startEatAnimation(f,eater){
+  if(!f.mesh.parent)return;
+  const obj=f.mesh;
+  const worldStart=new THREE.Vector3();
+  obj.getWorldPosition(worldStart);
+  const type=foodPhysicsType(f);
+
+  // Preserve the object's world transform when it leaves a parent group.
+  // This is especially useful for fence fragments.
+  if(obj.parent!==scene)scene.attach(obj);
+
+  const start=new THREE.Vector3(worldStart.x,worldStart.y,worldStart.z);
+  const params={
+    small:{dur:.34,lift:1.0,spin:rand(-10,10),fall:.9},
+    mushroom:{dur:.38,lift:1.15,spin:rand(-12,12),fall:1.0},
+    rock:{dur:.48,lift:.7,spin:rand(-7,7),fall:.8},
+    stone:{dur:.48,lift:.7,spin:rand(-7,7),fall:.8},
+    log:{dur:.62,lift:.9,spin:rand(-5,5),fall:1.15},
+    branch:{dur:.58,lift:1.0,spin:rand(-8,8),fall:1.2},
+    stump:{dur:.68,lift:.75,spin:rand(-4,4),fall:1.1},
+    bush:{dur:.72,lift:1.0,spin:rand(-3,3),fall:1.25},
+    tree:{dur:.95,lift:1.6,spin:rand(-2.5,2.5),fall:1.45},
+    fence:{dur:.52,lift:.55,spin:rand(-12,12),fall:1.05},
+    nature:{dur:.62,lift:.9,spin:rand(-5,5),fall:1.1}
+  }[type]||{dur:.42,lift:1,spin:rand(-6,6),fall:1};
+
+  eating.push({
+    obj,eater,start,t:0,
+    dur:params.dur,
+    food:f,spin:params.spin,
+    lift:params.lift,fall:params.fall,
+    type,scale:obj.scale.clone()
+  });
+}
+function updateEating(dt){
+  for(let i=eating.length-1;i>=0;i--){
+    const a=eating[i];
+    a.t+=dt;
+    const k=Math.min(1,a.t/a.dur);
+    const eased=1-Math.pow(1-k,3);
+    const tx=a.eater.x,tz=a.eater.z;
+
+    // First lift/tip, then accelerate down into the center.
+    const pull=Math.pow(eased,a.type==="tree"?.78:.62);
+    a.obj.position.x=startLerp(a.start.x,tx,pull);
+    a.obj.position.z=startLerp(a.start.z,tz,pull);
+
+    const arc=Math.sin(Math.min(1,k)*Math.PI)*a.lift;
+    const fall=Math.pow(k,a.fall)*Math.max(.35,a.start.y+.05);
+    a.obj.position.y=Math.max(.08,arc+fall*(1-k));
+
+    // Type-specific rotation.
+    const spinBoost=a.type==="tree"?1.8:a.type==="bush"?1.25:1;
+    a.obj.rotation.x+=dt*(7+Math.abs(a.spin)*.25)*spinBoost;
+    a.obj.rotation.z+=dt*(a.spin||5)*.22;
+    a.obj.rotation.y+=(a.spin||8)*dt;
+
+    const base=a.scale||{x:1,y:1,z:1};
+    const squash=Math.max(.08,1-eased*.84);
+    const sy=Math.max(.08,1-eased*.72);
+    const sx=a.type==="tree"||a.type==="bush" ? 1-eased*.18 : squash;
+    a.obj.scale.set(base.x*sx,base.y*sy,base.z*squash);
+
+    if(k>=1){
+      awardFoodPoints(a.eater,a.food||{r:.55});
+      a.obj.visible=false;
+      scene.remove(a.obj);
+      eating.splice(i,1);
+    }
+  }
+}
+function startLerp(a,b,t){return a+(b-a)*t;}
+
+function resolveWorldCollision(o,other){
+  const dx=o.x-other.x,dz=o.z-other.z,d=Math.hypot(dx,dz)||.001;
+  const min=o.r+other.r;
+  if(d<min){
+    const push=(min-d)/d;
+    o.x+=dx*push*.5;
+    o.z+=dz*push*.5;
+    other.x-=dx*push*.5;
+    other.z-=dz*push*.5;
+    return true;
+  }
+  return false;
+}
+
+
+
+function triggerSizePulse(level){
+  let el=document.getElementById("sizePulse");
+  if(!el){
+    el=document.createElement("div");
+    el.id="sizePulse";
+    document.body.appendChild(el);
+  }
+  el.textContent="SIZE "+level+"!";
+  el.classList.remove("show");
+  void el.offsetWidth;
+  el.classList.add("show");
+  setTimeout(()=>el.classList.remove("show"),800);
+}
+function awardFoodPoints(eater, food){
+  // Object points are based on the object's visible world size.
+  // Smallest objects = 1 point; very large trees = up to 10.
+  const points=Math.max(1,Math.min(10,Math.ceil(food.r/0.55))); if(eater===player)showPoints(points);
+  eater.foodPoints=(eater.foodPoints||0)+points;
+
+  // 50 food points = one size upgrade.
+  const level=Math.min(10,1+Math.floor(eater.foodPoints/50));
+  const targetRadius=3.2+(level-1)*0.65;
+  const oldLevel=eater.foodLevel||1;
+  if(level>oldLevel){
+    eater.r=Math.min(10,targetRadius);
+    eater.foodLevel=level;
+    if(eater===player) triggerSizePulse(level);
+  }else{
+    // Eating an object without crossing 50 points must not trigger a size-up.
+    eater.foodLevel=oldLevel;
+  }
+  return points;
+}
+
+
+function actorSizeLevel(a){return Math.min(10,Math.max(1,a.foodLevel||1));}
+function nearestEdibleFood(actor,maxDistance=42){
+  let best=null,bestD=maxDistance*maxDistance;
+  for(const f of foods){
+    if(!f||!f.mesh||!f.mesh.visible||actor.r<f.r)continue;
+    const d=dist2(actor,f);
+    if(d<bestD){bestD=d;best=f;}
+  }
+  return best;
+}
+function nearestWeakerEnemy(actor,maxDistance=30){
+  let best=null,bestD=maxDistance*maxDistance;
+  for(const other of [player,...bots]){
+    if(other===actor||other.r>=actor.r)continue;
+    const d=dist2(actor,other);
+    if(d<bestD){bestD=d;best=other;}
+  }
+  return best;
+}
+function nearestStrongerEnemy(actor,maxDistance=26){
+  let best=null,bestD=maxDistance*maxDistance;
+  for(const other of [player,...bots]){
+    if(other===actor||other.r<=actor.r)continue;
+    const d=dist2(actor,other);
+    if(d<bestD){bestD=d;best=other;}
+  }
+  return best;
+}
+function chooseBotGoal(b,dt){
+  b.aiThink=(b.aiThink||0)-dt;
+  if(b.aiThink>0)return;
+  const dc=difficultyConfig(); b.aiThink=rand(dc.thinkMin,dc.thinkMax);
+
+  b.chaseCooldown=Math.max(0,(b.chaseCooldown||0)-dt);
+  b.fearCooldown=Math.max(0,(b.fearCooldown||0)-dt);
+
+  const dp=Math.sqrt(dist2(b,player));
+
+  // Threat assessment: enemies are now aware of nearby stronger bots too.
+  let nearestThreat=null,threatDist=Infinity;
+  for(const other of [player,...bots]){
+    if(other===b||other.dead||other.r<=b.r*1.08)continue;
+    const d=Math.sqrt(dist2(b,other));
+    if(d<threatDist){threatDist=d;nearestThreat=other;}
+  }
+
+  // If threatened, survival wins over every other objective.
+  if(nearestThreat && threatDist<20){
+    b.mode="flee";
+    b.target=nearestThreat;
+    b.fearCooldown=2.5;
+    b.chasing=false;
+    return;
+  }
+
+  // Continue an active chase until it naturally expires or the target becomes
+  // too far away / no longer edible.
+  if(b.chasing){
+    b.chaseTime=Math.max(0,(b.chaseTime||0)-dt);
+    const t=b.target;
+    if(!t||t.dead||b.chaseTime<=0){
+      b.chasing=false;b.target=null;b.mode="wander";b.chaseCooldown=rand(2.5,4.5);
+    }else{
+      const d=Math.sqrt(dist2(b,t));
+      if(d>31 || t.r>=b.r*.94){
+        b.chasing=false;b.target=null;b.mode="wander";b.chaseCooldown=3;
+      }else{
+        b.mode="chase";
+        return;
+      }
+    }
+  }
+
+  // Big enough to hunt Big_D: only when genuinely close, with different
+  // personalities deciding how aggressively to engage.
+  if(b.r>player.r*1.08 && dp<22 && b.chaseCooldown<=0){
+    const willingness =
+      b.aiType==="hunter" ? .95 :
+      b.aiType==="opportunist" ? .70 :
+      b.aiType==="forager" ? .32 : .12;
+
+    if(Math.random()<willingness){
+      b.chasing=true;
+      b.chaseTime=b.aiType==="hunter"?10:rand(6,9);
+      b.target=player;
+      b.mode="chase";
+      return;
+    }
+  }
+
+  // Smaller AI circles avoid Big_D and larger AI, but choose an escape
+  // direction rather than simply running straight away.
+  if(b.r<player.r*.92 && dp<25 && b.fearCooldown<=0){
+    b.mode="flee";b.target=player;return;
+  }
+
+  // Hunters look for the nearest profitable prey. Opportunists only attack
+  // when the prey is close; foragers prioritize food.
+  if(b.aiType==="hunter"||b.aiType==="opportunist"){
+    const prey=nearestWeakerEnemy(b,b.aiType==="hunter"?34:20);
+    if(prey){
+      b.mode="chase";b.target=prey;
+      if(b.aiType==="hunter" && Math.random()<.72){
+        b.chasing=true;b.chaseTime=rand(5,10);
+      }
+      return;
+    }
+  }
+
+  // Look for food, but score it by value versus travel distance. This stops
+  // bots from crossing the entire map for a tiny object.
+  let bestFood=null,bestScore=-Infinity;
+  for(const f of foods){
+    if(!f||!f.mesh||!f.mesh.visible||b.r<f.r)continue;
+    const d=Math.sqrt(dist2(b,f));
+    if(d>34)continue;
+    const value=Math.max(1,f.foodValue||Math.round(Math.max(1,Math.min(10,f.r*2))));
+    const score=value*5-d*.42+Math.random()*1.5;
+    if(score>bestScore){bestScore=score;bestFood=f;}
+  }
+  if(bestFood){
+    b.mode="food";b.target=bestFood;return;
+  }
+
+  // Exploration: remember a destination for a while instead of constantly
+  // changing direction.
+  b.mode="wander";
+  b.target=null;
+  if(!b.txz||Math.hypot(b.x-b.tx,b.z-b.tz)<4||Math.random()<.12){
+    b.tx=rand(-HALF+8,HALF-8);
+    b.tz=rand(-HALF+8,HALF-8);
+  }
+}
+function victimOverlapRatio(attacker,victim){
+  const d=Math.hypot(attacker.x-victim.x,attacker.z-victim.z);
+  const R=attacker.r, r=victim.r;
+  if(d>=R+r)return 0;
+  if(d<=Math.abs(R-r))return R>=r?1:0;
+
+  const c1=Math.max(-1,Math.min(1,(d*d+R*R-r*r)/(2*d*R)));
+  const c2=Math.max(-1,Math.min(1,(d*d+r*r-R*R)/(2*d*r)));
+  const a1=R*R*Math.acos(c1);
+  const a2=r*r*Math.acos(c2);
+  const tri=.5*Math.sqrt(Math.max(0,(-d+R+r)*(d+R-r)*(d-R+r)*(d+R+r)));
+  const intersection=a1+a2-tri;
+  return intersection/(Math.PI*r*r);
+}
+
+function smoothApproach(current,target,rate,dt){
+  const k=1-Math.exp(-rate*dt);
+  return current+(target-current)*k;
+}
+function getActorMoveSpeed(a){
+  const level=Math.min(10,Math.max(1,a.foodLevel||1));
+  return 9.5-(level-1)*0.48;
+}
+function getActorTurnRate(a){
+  const level=Math.min(10,Math.max(1,a.foodLevel||1));
+  return 8.5-(level-1)*0.34;
+}
+function attractionStrength(distance,radius){
+  const influence=Math.max(radius*1.7,3);
+  const t=Math.max(0,Math.min(1,1-distance/influence));
+  return t*t;
+}
+
+function updateFoodAttraction(dt){
+  if(!player)return;
+  for(const f of foods){
+    if(!f?.mesh?.visible||!f.mesh.parent)continue;
+    if(f.r>player.r)continue; // Big_D can only pull objects he can eventually eat.
+
+    const dx=player.x-f.x,dz=player.z-f.z;
+    const d=Math.hypot(dx,dz);
+    const influence=Math.max(4.5,player.r*2.15+f.r*2.2);
+    if(d>=influence)continue;
+
+    const t=Math.max(0,Math.min(1,1-d/influence));
+    const strength=t*t;
+    const type=foodPhysicsType(f);
+
+    // Heavy objects resist the pull; small objects zip toward the hole.
+    const resistance=type==="tree"?3.8:type==="bush"?2.2:type==="stump"?2.6:type==="rock"||type==="stone"?1.7:1;
+    const accel=(9+player.r*1.8)*strength/resistance;
+
+    if(!f.vx)f.vx=0;
+    if(!f.vz)f.vz=0;
+    const inv=d>0.001?1/d:0;
+    f.vx+=dx*inv*accel*dt;
+    f.vz+=dz*inv*accel*dt;
+
+    // Damping makes the attraction feel physical instead of teleporting.
+    const drag=Math.exp(-2.4*dt);
+    f.vx*=drag;f.vz*=drag;
+
+    const maxSpeed=(3+player.r*.7)/Math.max(1,resistance*.55);
+    const vm=Math.hypot(f.vx,f.vz);
+    if(vm>maxSpeed){f.vx=f.vx/vm*maxSpeed;f.vz=f.vz/vm*maxSpeed;}
+
+    f.x+=f.vx*dt;f.z+=f.vz*dt;
+
+    // Move the visible object using its logical world position.
+    if(f.mesh.userData?.mapObject){
+      f.mesh.position.x+=f.vx*dt;
+      f.mesh.position.z+=f.vz*dt;
+      f.mesh.rotation.y+=(f.vx-f.vz)*dt*.035;
+    }else{
+      f.mesh.position.x+=f.vx*dt;
+      f.mesh.position.z+=f.vz*dt;
+      f.mesh.rotation.y+=(f.vx+f.vz)*dt*.05;
+    }
+  }
+}
+
+function update(dt){
+  updateEating(dt);
+  updateHoleVisuals(dt);
+  // Player.
+  const speed=player.speed*sizeSpeedMultiplier(player);
+  let moveX=inputX, moveY=inputY;
+  const keyX=(keyboardState.right?1:0)-(keyboardState.left?1:0);
+  const keyY=(keyboardState.down?1:0)-(keyboardState.up?1:0);
+
+  // Keyboard takes control when pressed; otherwise the touch joystick works normally.
+  if(keyX!==0 || keyY!==0){
+    const len=Math.hypot(keyX,keyY)||1;
+    moveX=keyX/len;
+    moveY=keyY/len;
+  }
+
+  player.x+=moveX*speed*dt;
+  player.z+=moveY*speed*dt;
+  player.x=clamp(player.x,-HALF+player.r,HALF-player.r);
+  player.z=clamp(player.z,-HALF+player.r,HALF-player.r);
+
+  const maxR=Math.max(2.4,Math.min(8,Math.min(innerWidth,innerHeight)*.014));
+  player.r=Math.min(player.r,maxR);
+
+  // Gravity-like attraction field: objects react before they touch Big_D.
+  updateFoodAttraction(dt);
+
+  // Food movement and player collection.
+  for(let i=foods.length-1;i>=0;i--){
+    const f=foods[i];
+    if(!f.mesh || !f.mesh.parent){
+      foods.splice(i,1);
+      continue;
+    }
+    if(f.isMapObject){
+      const box=new THREE.Box3().setFromObject(f.mesh);
+      const c=new THREE.Vector3();
+      const s=new THREE.Vector3();
+      box.getCenter(c);box.getSize(s);
+      f.x=c.x;f.z=c.z;
+      f.r=Math.max(.25,Math.max(s.x,s.z)*.5);
+    }
+    f.mesh.rotation.y+=f.rot*dt*.15;
+
+    // Edible collision uses the same world-space radius as the visible mesh.
+    // The whole object must fit inside the hole before it is swallowed.
+    const foodDist=Math.hypot(player.x-f.x,player.z-f.z);
+    if(player.r>=f.r && foodDist+f.r<=player.r+0.12){
+      startEatAnimation(f,player);
+      queueRespawn(f);
+      foods.splice(i,1);
+    }
+  }
+  updateRespawns();
+  while(foods.length<85)foods.push(randomFood());
+
+  // Map decorations are purely edible scenery.
+  // They never participate in movement collision, so the entire map remains
+  // traversable. Swallowing is handled by the food system below.
+
+  // Bots: bigger nearby enemies prioritize chasing Big_D.
+  // Player-versus-AI combat: Big_D can swallow an AI circle only when
+  // Big_D is larger and the entire AI circle fits inside Big_D.
+  for(const b of bots){
+    if(!b||b.dead)continue;
+    const overlap=victimOverlapRatio(player,b);
+    if(sizeLevel(player)>sizeLevel(b) && overlap>=0.70){
+      player.kills=(player.kills||0)+1;
+      player.r=Math.min(10,player.r+b.r*.10);
+      syncActorSize(player);
+      respawnBot(b);
+      updateBoard();
+    }
+  }
+
+for(const b of bots){
+    chooseBotGoal(b,dt);
+    b.chaseCooldown=Math.max(0,(b.chaseCooldown||0)-dt);
+    const d=dist2(player,b);
+    const bigger=b.r>player.r*1.08;
+    const smaller=b.r<player.r*.92;
+
+    // Every enemy can hunt another enemy as well as Big_D.
+    // The nearest nearby smaller hole becomes its prey.
+    let prey=null,preyDist=Infinity;
+    for(const other of bots){
+      if(other===b)continue;
+      if(b.r>other.r*1.08){
+        const od=dist2(b,other);
+        const dc=difficultyConfig();
+        const preyChance=currentDifficulty==="Hard" ? 1 : (currentDifficulty==="Medium" ? .28 : .08);
+        if(od<preyDist && od<dc.botChaseRadius && Math.random()<preyChance){
+          prey=other;preyDist=od;
+        }
+      }
+    }
+
+    if(!b.chasing && b.chaseCooldown<=0){
+      if(bigger && d<difficultyConfig().playerChaseRadius){
+        b.chasing=true;b.mode="chasePlayer";b.chaseTime=difficultyConfig().chaseDuration;
+      }else if(prey){
+        b.chasing=true;b.mode="chaseBot";b.target=prey;b.chaseTime=difficultyConfig().chaseDuration;
+      }else if(smaller && d<difficultyConfig().playerChaseRadius){
+        b.chasing=true;b.mode="flee";b.chaseTime=difficultyConfig().chaseDuration;
+      }
+    }
+
+    if(b.chasing){
+      b.chaseTime-=dt;
+      if(b.chaseTime<=0){
+        b.chasing=false;b.mode="wander";b.target=null;
+        b.chaseCooldown=4;
+      }
+      if(b.mode==="chaseBot" && (!b.target || !bots.includes(b.target) || b.r<=b.target.r*1.08)){
+        b.chasing=false;b.mode="wander";b.target=null;
+      }
+      if(b.mode==="chasePlayer" && d>difficultyConfig().disengageRadius){
+        b.chasing=false;b.mode="wander";
+      }
+      if(b.mode==="chaseBot" && preyDist>difficultyConfig().disengageRadius){
+        b.chasing=false;b.mode="wander";b.target=null;
+      }
+    }
+
+    let targetFood=null,best=Infinity;
+    if(!b.chasing){
+      for(const f of foods){
+        if(b.r>f.r*0.92){
+          const fd=dist2(b,f);
+          if(fd<best&&fd<difficultyConfig().foodRadius){best=fd;targetFood=f;}
+        }
+      }
+    }
+
+    if(b.chasing&&b.mode==="chasePlayer"){
+      b.tx=player.x;b.tz=player.z;
+    }else if(b.chasing&&b.mode==="chaseBot"){
+      b.tx=b.target.x;b.tz=b.target.z;
+    }else if(b.chasing&&b.mode==="flee"){
+      b.tx=clamp(b.x+(b.x-player.x)*2,-HALF+3,HALF-3);
+      b.tz=clamp(b.z+(b.z-player.z)*2,-HALF+3,HALF-3);
+    }else if(targetFood){
+      b.tx=targetFood.x;b.tz=targetFood.z;
+    }else{
+      b.timer-=dt;
+      if(b.timer<=0){
+        b.timer=rand(.8,2);
+        b.tx=rand(-HALF+5,HALF-5);b.tz=rand(-HALF+5,HALF-5);
+      }
+    }
+
+    let dx=b.tx-b.x,dz=b.tz-b.z,dd=Math.hypot(dx,dz)||1;
+
+    // Smooth steering prevents robotic 90-degree direction changes.
+    const desiredX=dx/dd, desiredZ=dz/dd;
+    b.vx=smoothApproach(b.vx||0,desiredX,4.5,dt);
+    b.vz=smoothApproach(b.vz||0,desiredZ,4.5,dt);
+    const vl=Math.hypot(b.vx,b.vz)||1;
+    const sp=b.speed*sizeSpeedMultiplier(b);
+    b.x+=b.vx/vl*sp*dt;
+    b.z+=b.vz/vl*sp*dt;
+    b.x=clamp(b.x,-HALF+b.r,HALF-b.r);b.z=clamp(b.z,-HALF+b.r,HALF-b.r);
+
+    // Enemy eats food and grows.
+    for(let i=foods.length-1;i>=0;i--){
+      const f=foods[i];
+      const botFoodDist=Math.hypot(b.x-f.x,b.z-f.z);
+      if(b.r>=f.r && botFoodDist+f.r<=b.r+0.12){
+        startEatAnimation(f,b);
+        queueRespawn(f);
+        foods.splice(i,1);
+      }
+    }
+
+    // Circle-vs-circle eating:
+    // 1) attacker must be strictly larger in SIZE;
+    // 2) at least 70% of the victim must be inside the attacker.
+    // This is the ONLY kill rule for circles.
+    const playerLevel=sizeLevel(player);
+    const botLevel=sizeLevel(b);
+    if(playerLevel>botLevel && victimOverlapRatio(player,b)>=0.70){
+      awardCircleKillPoints(player,b);
+      player.kills=(player.kills||0)+1;
+      syncActorSize(player);
+      respawnBot(b);
+    }else if(botLevel>playerLevel && victimOverlapRatio(b,player)>=0.70){
+      awardCircleKillPoints(b,player);
+      b.kills=(b.kills||0)+1;
+      gameOver=true;
+      running=false;
+      setTimeout(showGameOver,250);
+      return;
+    }
+
+
+    // Enemy-vs-enemy kills use the same full-containment rule.
+    // They NEVER end the game; the swallowed enemy simply respawns.
+    for(const other of bots.slice()){
+      if(other===b)continue;
+      const bd=dist2(b,other);
+      if(sizeLevel(b)>sizeLevel(other) && victimOverlapRatio(b,other)>=0.70){
+        const oldTarget=other;
+        awardCircleKillPoints(b,other);
+        b.kills=(b.kills||0)+1;
+        syncActorSize(b);
+        respawnBot(other);
+        if(b.target===oldTarget){
+          b.target=null;b.chasing=false;b.mode="wander";b.chaseTime=0;
+        }
+        break;
+      }
+    }
+  }
+
+  setHoleScale(player);
+  for(const b of bots)setHoleScale(b);
+  updateCamera(dt);
+  updateBoard();
+}
+
+function updateNameLabels(){
+  if(!camera || !player)return;
+  const targets=[player,...bots];
+  const v=new THREE.Vector3();
+  const w=innerWidth,h=innerHeight;
+
+  for(const o of targets){
+    const label=o.mesh && o.mesh.userData ? o.mesh.userData.label : null;
+    if(!label)continue;
+
+    v.set(o.x,Math.max(5.2,o.r*1.8),o.z);
+    v.project(camera);
+
+    // In front of the camera and inside the viewport.
+    const inFront=v.z>=-1 && v.z<=1;
+    const sx=(v.x+1)*0.5*w;
+    const sy=(1-v.y)*0.5*h;
+    const onScreen=sx>-80 && sx<w+80 && sy>-50 && sy<h+50;
+
+    if(!inFront || !onScreen){
+      label.style.display="none";
+      continue;
+    }
+
+    label.style.left=sx+"px";
+    label.style.top=sy+"px";
+    label.style.display="block";
+    label.style.fontSize=(o===player?"16px":"14px");
+    label.style.borderColor=o.color;
+  }
+}
+
+
+function updateCamera(dt){
+  camera.position.x+=(player.x-camera.position.x)*Math.min(1,dt*5);
+  camera.position.z+=(player.z+13-camera.position.z)*Math.min(1,dt*5);
+  camera.position.y=34;
+  camera.lookAt(player.x,0,player.z);
+}
+
+
+function updateProgressHUD(){
+  let h=document.getElementById("progressHud");
+  if(!h){h=document.createElement("div");h.id="progressHud";document.body.appendChild(h);}
+  const level=actorSizeLevel(player), pts=player.foodPoints||0, into=pts%50;
+  h.innerHTML=`<b>BIG_D · SIZE ${level}/10</b>
+    <div class="progressBar"><i style="width:${level>=10?100:(into/50*100)}%"></i></div>
+    <small>${level>=10?"MAX SIZE":"Food points: "+into+" / 50"}</small>`;
+}
+function showPoints(points){
+  const e=document.createElement("div");e.className="pointsPop";e.textContent="+"+points;
+  document.body.appendChild(e);
+  e.style.left="50%";e.style.top="58%";
+  requestAnimationFrame(()=>e.classList.add("show"));
+  setTimeout(()=>e.remove(),650);
+}
+function updateBoard(){
+  const rows=[player,...bots].filter(Boolean).sort((a,b)=>b.r-a.r);
+  rowsEl.innerHTML = "";
+
+  const table=document.createElement("table");
+  table.className="finalScoreTable";
+
+  const thead=document.createElement("thead");
+  const header=document.createElement("tr");
+  ["NAME","SIZE","KILLS"].forEach((text)=>{
+    const th=document.createElement("th");
+    th.textContent=text;
+    header.appendChild(th);
+  });
+  thead.appendChild(header);
+
+  const tbody=document.createElement("tbody");
+  for(const o of rows){
+    const tr=document.createElement("tr");
+
+    const tdName=document.createElement("td");
+    tdName.className="finalName";
+    tdName.textContent=o.name || "Player";
+    const nameColor=o.color || "#ffffff";
+    tdName.style.setProperty("color",nameColor,"important");
+    tdName.style.setProperty("-webkit-text-fill-color",nameColor,"important");
+    tdName.style.setProperty("text-shadow","0 1px 2px rgba(0,0,0,.95)","important");
+
+    const tdSize=document.createElement("td");
+    tdSize.className="finalSize";
+    tdSize.textContent=String(sizeLevel(o))+"/10";
+
+    const tdKills=document.createElement("td");
+    tdKills.className="finalKills";
+    tdKills.textContent=String(Number.isFinite(o.kills)?o.kills:0);
+
+    tr.append(tdName,tdSize,tdKills);
+    tbody.appendChild(tr);
+  }
+
+  table.append(thead,tbody);
+  rowsEl.appendChild(table);
+  updateProgressHUD();
+}
+
+function showGameOver(){
+  menu.style.display="flex";
+  card.innerHTML='<h1>GAME OVER</h1><p>Big_D was swallowed.</p><p>Kills: '+player.kills+'</p><button id="again">PLAY AGAIN</button>';
+  document.getElementById("again").onclick=start;
+}
+
+function drawDecor(){
+  for(let i=0;i<55;i++){
+    let x=rand(-HALF+5,HALF-5),z=rand(-HALF+5,HALF-5);
+    if(Math.hypot(x,z)<25)continue;
+    addTree(x,z,rand(.55,1.05));
+  }
+}
+
+function addCityBackdrop(){
+  const mat=new THREE.MeshStandardMaterial({color:0x356b3d,roughness:1});
+  for(let i=0;i<44;i++){const a=i/44*Math.PI*2,h=rand(7,14),t=new THREE.Mesh(new THREE.ConeGeometry(rand(2.5,4),h,8),mat);t.position.set(Math.cos(a)*94,h/2,Math.sin(a)*94);scene.add(t);}
+}
+function setup(){
+  scene=new THREE.Scene();
+  scene.background=new THREE.Color(0xb9d9b0);
+  scene.fog=new THREE.Fog(0xb9d9b0,70,150);
+
+  camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,250);
+  camera.position.set(0,34,16);
+
+  renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure=1.12;
+  renderer.setPixelRatio(Math.min(1.75,devicePixelRatio||1));
+  renderer.setSize(innerWidth,innerHeight);
+  renderer.shadowMap.enabled=true;
+  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  game.appendChild(renderer.domElement);
+
+  scene.add(new THREE.HemisphereLight(0xf4ffe9,0x3f6040,3.8));
+  const sun=new THREE.DirectionalLight(0xffffff,2.4);
+  sun.position.set(-32,58,24);sun.castShadow=true;sun.shadow.bias=-0.00035;sun.shadow.normalBias=.035;sun.shadow.mapSize.set(1536,1536);
+  scene.add(sun);
+
+  makeTerrain();
+  addCityBackdrop();
+  addParkObjects();
+  addNatureDetailObjects();
+  reset();
+  
+
+  renderer.domElement.addEventListener("contextmenu",e=>e.preventDefault());
+  window.addEventListener("resize",()=>{
+    camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth,innerHeight);
+  });
+  const diffEasy=document.getElementById("diffEasy");
+  const diffMedium=document.getElementById("diffMedium");
+  const diffHard=document.getElementById("diffHard");
+  function chooseDifficulty(v){
+    currentDifficulty=v;
+    [diffEasy,diffMedium,diffHard].forEach(x=>x.classList.remove("selected"));
+    ({Easy:diffEasy,Medium:diffMedium,Hard:diffHard}[v]).classList.add("selected");
+  }
+  diffEasy.addEventListener("click",()=>chooseDifficulty("Easy"));
+  diffMedium.addEventListener("click",()=>chooseDifficulty("Medium"));
+  diffHard.addEventListener("click",()=>chooseDifficulty("Hard"));
+  chooseDifficulty("Hard");
+  document.getElementById("play").onclick=start;
+}
+
+function start(){
+  reset();menu.style.display="none";
+  document.getElementById("hud").style.visibility="visible";
+  document.getElementById("scoreboard").style.visibility="visible";
+  document.getElementById("joy").style.visibility="visible";
+  running=true;gameOver=false;last=performance.now();
+  requestAnimationFrame(loop);
+}
+
+function loop(t){
+  if(!running)return;
+  const dt=Math.min(.04,Math.max(.001,(t-last)/1000));last=t;
+
+  try{
+    update(dt);
+  }catch(err){
+    console.error("Swallow.io update error:",err);
+    foods=foods.filter(f=>f&&f.mesh&&Number.isFinite(f.x)&&Number.isFinite(f.z));
+    bots=bots.filter(b=>b&&b.mesh&&Number.isFinite(b.x)&&Number.isFinite(b.z));
+  }
+
+  try{renderer.render(scene,camera);}
+  catch(err){console.error("Swallow.io render error:",err);}
+
+  try{updateNameLabels();}
+  catch(err){console.error("Swallow.io label error:",err);}
+
+  requestAnimationFrame(loop);
+}
+
+
+
+// Keyboard controls: arrows + WASD.
+const keyboardState={up:false,down:false,left:false,right:false};
+
+function setKeyboardKey(key,down){
+  if(key==="ArrowUp"||key==="w") keyboardState.up=down;
+  if(key==="ArrowDown"||key==="s") keyboardState.down=down;
+  if(key==="ArrowLeft"||key==="a") keyboardState.left=down;
+  if(key==="ArrowRight"||key==="d") keyboardState.right=down;
+}
+window.addEventListener("keydown",e=>{
+  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].includes(e.key)){
+    setKeyboardKey(e.key,true);
+    e.preventDefault();
+  }
+},{passive:false});
+window.addEventListener("keyup",e=>{
+  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].includes(e.key)){
+    setKeyboardKey(e.key,false);
+    e.preventDefault();
+  }
+},{passive:false});
+
+// Mobile joystick.
+function joySet(e){
+  e.preventDefault();
+  const r=joy.getBoundingClientRect();
+  let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);
+  const max=43,d=Math.hypot(dx,dy);
+  if(d>max){dx=dx/d*max;dy=dy/d*max;}
+  inputX=dx/max;inputY=dy/max;
+  stick.style.transform='translate('+dx+'px,'+dy+'px)';
+}
+function joyClear(e){
+  if(e&&e.preventDefault)e.preventDefault();
+  joyId=null;inputX=0;inputY=0;stick.style.transform='translate(0,0)';
+}
+joy.addEventListener('pointerdown',function(e){
+  e.preventDefault();
+  joyId=e.pointerId;
+  try{joy.setPointerCapture(e.pointerId)}catch(_){}
+  joySet(e);
+},{passive:false});
+joy.addEventListener('pointermove',function(e){
+  if(e.pointerId===joyId)joySet(e);
+},{passive:false});
+joy.addEventListener('pointerup',function(e){
+  if(e.pointerId===joyId)joyClear(e);
+},{passive:false});
+joy.addEventListener('pointercancel',function(e){
+  if(e.pointerId===joyId)joyClear(e);
+},{passive:false});
+joy.addEventListener('lostpointercapture',function(){joyClear();});
+
+
+try{setup();}catch(err){
+  console.error(err);
+  card.innerHTML='<h2>3D engine could not start</h2><p>Your browser may have WebGL disabled.</p>';
+}
+</script>
+</body>
+</html>
